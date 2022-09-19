@@ -58,9 +58,9 @@ jobs:
             type=semver,pattern={{major}}
 
       - id: tags-output
-        run: echo ${{ fromJSON(steps.meta.outputs.json.tags) }}
+        run: echo ${{ fromJSON(steps.meta.outputs.json).tags }}
       - id: labels-output
-        run: echo ${{ fromJSON(steps.meta.outputs.json.labels) }}
+        run: echo ${{ fromJSON(steps.meta.outputs.json).labels }}
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
