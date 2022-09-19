@@ -100,7 +100,7 @@ jobs:
       
       - name: Install Terragrunt
         run: |
-          sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/${{ input.tg-version }}/terragrunt_linux_amd64"
+          sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/${{ inputs.tg-version }}/terragrunt_linux_amd64"
           sudo chmod +x /bin/terragrunt
           terragrunt -v
       
@@ -115,8 +115,8 @@ jobs:
       - name: Terraform Apply
         id: apply
         env:
-          DOCKER_IMAGE: ${{ input.docker-image }}
-          DOCKER_TAG: ${{ input.docker-tag }}
+          DOCKER_IMAGE: ${{ inputs.docker-image }}
+          DOCKER_TAG: ${{ inputs.docker-tag }}
           WORKING_DIR: ${{ github.workspace }}/terragrunt/dev/${{ matrix.path }}
         run: |
           terragrunt apply --terragrunt-working-dir ${{ env.WORKING_DIR }} -auto-approve
