@@ -37,10 +37,13 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-
+    outputs:
+      tags: ${{ jobs.build-image.outputs.tags }}
 jobs:
   build-image:
     runs-on: ubuntu-latest
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
