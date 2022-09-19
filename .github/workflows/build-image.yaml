@@ -3,9 +3,6 @@ name: Build image
 on:
   workflow_call:
     inputs:
-      environment:
-        required: true
-        type: string
       docker-image: 
         required: true
         type: string
@@ -13,9 +10,6 @@ on:
         required: true
         type: string
       build-platform: 
-        required: true
-        type: string
-      aws-account:
         required: true
         type: string
       aws-region:
