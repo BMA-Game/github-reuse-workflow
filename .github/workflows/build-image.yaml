@@ -32,7 +32,10 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
-      tags: ${{ jobs.build-image.outputs.tags }}
+      tags: 
+        description: "Build tags"
+        value: ${{ jobs.build-image.outputs.tags }}
+
 jobs:
   build-image:
     runs-on: ubuntu-latest
