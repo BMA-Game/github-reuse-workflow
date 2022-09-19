@@ -61,7 +61,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: ${{ fromJson(inputs.setup-platforms) }}
+          platforms: ${{ inputs.setup-platforms }}
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -84,7 +84,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
-          platforms: ${{ fromJson(inputs.build-platforms) }}
+          platforms: ${{ inputs.build-platforms }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
