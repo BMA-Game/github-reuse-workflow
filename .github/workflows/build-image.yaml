@@ -54,7 +54,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: |
-            ${{ env.docker-image }}
+            ${{ inputs.docker-image }}
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
@@ -65,7 +65,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: ${{ env.setup-platform }}
+          platforms: ${{ inputs.setup-platform }}
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -75,10 +75,10 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.aws-region }}
-          role-to-assume: ${{ env.role-to-assume }}
-          role-session-name: ${{ env.role-session-name }}
-          role-duration-seconds: ${{ env.role-duration-seconds }}
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
       
       - name: Login to Amazon ECR
         id: login-ecr
