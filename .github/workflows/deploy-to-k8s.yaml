@@ -3,6 +3,9 @@ name: Deploy to K8s
 on:
   workflow_call:
     inputs:
+      environment:
+        required: true
+        type: string
       docker-image: 
         required: true
         type: string
@@ -108,7 +111,7 @@ jobs:
         id: init
         env:
           SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-          WORKING_DIR: ${{ github.workspace }}/terragrunt/dev/${{ matrix.path }}
+          WORKING_DIR: ${{ github.workspace }}/terragrunt/${{ inputs.environment }}/${{ matrix.path }}
         run: |
           terragrunt init -upgrade --terragrunt-working-dir ${{ env.WORKING_DIR }}
       
@@ -117,6 +120,6 @@ jobs:
         env:
           DOCKER_IMAGE: ${{ inputs.docker-image }}
           DOCKER_TAG: ${{ inputs.docker-tag }}
-          WORKING_DIR: ${{ github.workspace }}/terragrunt/dev/${{ matrix.path }}
+          WORKING_DIR: ${{ github.workspace }}/terragrunt/${{ inputs.environment }}/${{ matrix.path }}
         run: |
           terragrunt apply --terragrunt-working-dir ${{ env.WORKING_DIR }} -auto-approve
