@@ -1,0 +1,169 @@
+name: Get ci environment
+
+on:
+  workflow_call:
+    outputs:
+      CI_REPOSITORY_SLUG: 
+        description: "CI_REPOSITORY_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_REPOSITORY_SLUG }}
+      CI_REPOSITORY_OWNER: 
+        description: "CI_REPOSITORY_OWNER"
+        value: ${{ jobs.get-environment.outputs.CI_REPOSITORY_OWNER }}
+      CI_REPOSITORY_OWNER_SLUG: 
+        description: "CI_REPOSITORY_OWNER_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_REPOSITORY_OWNER_SLUG }}
+      CI_REPOSITORY_NAME: 
+        description: "CI_REPOSITORY_NAME"
+        value: ${{ jobs.get-environment.outputs.CI_REPOSITORY_NAME }}
+      CI_REPOSITORY_NAME_SLUG: 
+        description: "CI_REPOSITORY_NAME_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_REPOSITORY_NAME_SLUG }}
+      CI_REPOSITORY: 
+        description: "CI_REPOSITORY"
+        value: ${{ jobs.get-environment.outputs.CI_REPOSITORY }}
+      CI_REF_SLUG: 
+        description: "CI_REF_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_REF_SLUG }}
+      CI_ACTION_REF_NAME: 
+        description: "CI_ACTION_REF_NAME"
+        value: ${{ jobs.get-environment.outputs.CI_ACTION_REF_NAME }}
+      CI_ACTION_REF_NAME_SLUG: 
+        description: "CI_ACTION_REF_NAME_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_ACTION_REF_NAME_SLUG }}
+      CI_REF_NAME: 
+        description: "CI_REF_NAME"
+        value: ${{ jobs.get-environment.outputs.CI_REF_NAME }}
+      CI_REF_NAME_SLUG: 
+        description: "CI_REF_NAME_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_REF_NAME_SLUG }}
+      CI_REF: 
+        description: "CI_REF"
+        value: ${{ jobs.get-environment.outputs.CI_REF }}
+      CI_HEAD_REF_SLUG: 
+        description: "CI_HEAD_REF_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_HEAD_REF_SLUG }}
+      CI_HEAD_REF: 
+        description: "CI_HEAD_REF"
+        value: ${{ jobs.get-environment.outputs.CI_HEAD_REF }}
+      CI_BASE_REF_SLUG: 
+        description: "CI_BASE_REF_SLUG"
+        value: ${{ jobs.get-environment.outputs.CI_BASE_REF_SLUG }}
+      CI_BASE_REF: 
+        description: "CI_BASE_REF"
+        value: ${{ jobs.get-environment.outputs.CI_BASE_REF }}
+      CI_SHA_SHORT: 
+        description: "CI_SHA_SHORT"
+        value: ${{ jobs.get-environment.outputs.CI_SHA_SHORT }}
+      CI_SHA: 
+        description: "CI_SHA"
+        value: ${{ jobs.get-environment.outputs.CI_SHA }}
+      CI_PR_SHA_SHORT: 
+        description: "CI_PR_SHA_SHORT"
+        value: ${{ jobs.get-environment.outputs.CI_PR_SHA_SHORT }}
+      CI_PR_SHA: 
+        description: "CI_PR_SHA"
+        value: ${{ jobs.get-environment.outputs.CI_PR_SHA }}
+      CI_PR_NUMBER: 
+        description: "CI_PR_NUMBER"
+        value: ${{ jobs.get-environment.outputs.CI_PR_NUMBER }}
+      CI_PR_ID: 
+        description: "CI_PR_ID"
+        value: ${{ jobs.get-environment.outputs.CI_PR_ID }}
+      CI_PR_TITLE: 
+        description: "CI_PR_TITLE"
+        value: ${{ jobs.get-environment.outputs.CI_PR_TITLE }}
+      CI_PR_DESCRIPTION: 
+        description: "CI_PR_DESCRIPTION"
+        value: ${{ jobs.get-environment.outputs.CI_PR_DESCRIPTION }}
+      CI_ACTOR: 
+        description: "CI_ACTOR"
+        value: ${{ jobs.get-environment.outputs.CI_ACTOR }}
+      CI_EVENT_NAME: 
+        description: "CI_EVENT_NAME"
+        value: ${{ jobs.get-environment.outputs.CI_EVENT_NAME }}
+      CI_RUN_ID: 
+        description: "CI_RUN_ID"
+        value: ${{ jobs.get-environment.outputs.CI_RUN_ID }}
+      CI_RUN_NUMBER: 
+        description: "CI_RUN_NUMBER"
+        value: ${{ jobs.get-environment.outputs.CI_RUN_NUMBER }}
+      CI_WORKFLOW: 
+        description: "CI_WORKFLOW"
+        value: ${{ jobs.get-environment.outputs.CI_WORKFLOW }}
+      CI_ACTION: 
+        description: "CI_ACTION"
+        value: ${{ jobs.get-environment.outputs.CI_ACTION }}
+
+jobs:
+  get-environment:
+    runs-on: ubuntu-latest
+    outputs:
+      CI_REPOSITORY_SLUG: ${{ CI_REPOSITORY_SLUG }}
+      CI_REPOSITORY_OWNER: ${{ CI_REPOSITORY_OWNER }}
+      CI_REPOSITORY_OWNER_SLUG: ${{ CI_REPOSITORY_OWNER_SLUG }}
+      CI_REPOSITORY_NAME: ${{ CI_REPOSITORY_NAME }}
+      CI_REPOSITORY_NAME_SLUG: ${{ CI_REPOSITORY_NAME_SLUG }}
+      CI_REPOSITORY: ${{ CI_REPOSITORY }}
+      CI_REF_SLUG: ${{ CI_REF_SLUG }}
+      CI_ACTION_REF_NAME: ${{ CI_ACTION_REF_NAME }}
+      CI_ACTION_REF_NAME_SLUG: ${{ CI_ACTION_REF_NAME_SLUG }}
+      CI_REF_NAME: ${{ CI_REF_NAME }}
+      CI_REF_NAME_SLUG: ${{ CI_REF_NAME_SLUG }}
+      CI_REF: ${{ CI_REF }}
+      CI_HEAD_REF_SLUG: ${{ CI_HEAD_REF_SLUG }}
+      CI_HEAD_REF: ${{ CI_HEAD_REF }}
+      CI_BASE_REF_SLUG: ${{ CI_BASE_REF_SLUG }}
+      CI_BASE_REF: ${{ CI_BASE_REF }}
+      CI_SHA_SHORT: ${{ CI_SHA_SHORT }}
+      CI_SHA: ${{ CI_SHA }}
+      CI_PR_SHA_SHORT: ${{ CI_PR_SHA_SHORT }}
+      CI_PR_SHA: ${{ CI_PR_SHA }}
+      CI_PR_NUMBER: ${{ CI_PR_NUMBER }}
+      CI_PR_ID: ${{ CI_PR_ID }}
+      CI_PR_TITLE: ${{ CI_PR_TITLE }}
+      CI_PR_DESCRIPTION: ${{ CI_PR_DESCRIPTION }}
+      CI_ACTOR: ${{ CI_ACTOR }}
+      CI_EVENT_NAME: ${{ CI_EVENT_NAME }}
+      CI_RUN_ID: ${{ CI_RUN_ID }}
+      CI_RUN_NUMBER: ${{ CI_RUN_NUMBER }}
+      CI_WORKFLOW: ${{ CI_WORKFLOW }}
+      CI_ACTION: ${{ CI_ACTION }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: FranzDiebold/github-env-vars-action@v2
+
+      - name: environment
+        id: tag
+        run: |
+          echo ::set-output name=CI_REPOSITORY_SLUG::$CI_REPOSITORY_SLUG
+          echo ::set-output name=CI_REPOSITORY_OWNER::$CI_REPOSITORY_OWNER
+          echo ::set-output name=CI_REPOSITORY_OWNER_SLUG::$CI_REPOSITORY_OWNER_SLUG
+          echo ::set-output name=CI_REPOSITORY_NAME::$CI_REPOSITORY_NAME
+          echo ::set-output name=CI_REPOSITORY_NAME_SLUG::$CI_REPOSITORY_NAME_SLUG
+          echo ::set-output name=CI_REPOSITORY::$CI_REPOSITORY
+          echo ::set-output name=CI_REF_SLUG::$CI_REF_SLUG
+          echo ::set-output name=CI_ACTION_REF_NAME::$CI_ACTION_REF_NAME
+          echo ::set-output name=CI_ACTION_REF_NAME_SLUG::$CI_ACTION_REF_NAME_SLUG
+          echo ::set-output name=CI_REF_NAME::$CI_REF_NAME
+          echo ::set-output name=CI_REF_NAME_SLUG::$CI_REF_NAME_SLUG
+          echo ::set-output name=CI_REF::$CI_REF
+          echo ::set-output name=CI_HEAD_REF_SLUG::$CI_HEAD_REF_SLUG
+          echo ::set-output name=CI_HEAD_REF::$CI_HEAD_REF
+          echo ::set-output name=CI_BASE_REF_SLUG::$CI_BASE_REF_SLUG
+          echo ::set-output name=CI_BASE_REF::$CI_BASE_REF
+          echo ::set-output name=CI_SHA_SHORT::$CI_SHA_SHORT
+          echo ::set-output name=CI_SHA::$CI_SHA
+          echo ::set-output name=CI_PR_SHA_SHORT::$CI_PR_SHA_SHORT
+          echo ::set-output name=CI_PR_SHA::$CI_PR_SHA
+          echo ::set-output name=CI_PR_NUMBER::$CI_PR_NUMBER
+          echo ::set-output name=CI_PR_ID::$CI_PR_ID
+          echo ::set-output name=CI_PR_TITLE::$CI_PR_TITLE
+          echo ::set-output name=CI_PR_DESCRIPTION::$CI_PR_DESCRIPTION
+          echo ::set-output name=CI_ACTOR::$CI_ACTOR
+          echo ::set-output name=CI_EVENT_NAME::$CI_EVENT_NAME
+          echo ::set-output name=CI_RUN_ID::$CI_RUN_ID
+          echo ::set-output name=CI_RUN_NUMBER::$CI_RUN_NUMBER
+          echo ::set-output name=CI_WORKFLOW::$CI_WORKFLOW
+          echo ::set-output name=CI_ACTION::$CI_ACTION
