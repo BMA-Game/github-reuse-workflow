@@ -6,8 +6,8 @@ on:
       GH_PAT:
         required: true
     outputs:
-      tags: 
-        description: "Tags"
+      tag: 
+        description: "Tag"
         value: ${{ jobs.release-tag.outputs.tag }}
       new_release_published: 
         description: "New release published"
