@@ -74,11 +74,6 @@ jobs:
           terraform_version: ${{ inputs.tf-version}}
           terraform_wrapper: false
       
-      - name: Current Terraform version
-        run: |
-          terraform -v
-          which terraform
-      
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -89,23 +84,10 @@ jobs:
           role-session-name: ${{ inputs.role-session-name }}
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
       
-      - name: Setup AWS CLI
-        id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@master
-        with:
-          version: 2
-      
-      - name: Check current role
-        run: |
-          aws --version
-          aws sts get-caller-identity
-        shell: bash
-      
       - name: Install Terragrunt
         run: |
           sudo wget -q -O /bin/terragrunt "https://github.com/gruntwork-io/terragrunt/releases/download/${{ inputs.tg-version }}/terragrunt_linux_amd64"
           sudo chmod +x /bin/terragrunt
-          terragrunt -v
       
       - name: Terragrunt Init
         id: init
