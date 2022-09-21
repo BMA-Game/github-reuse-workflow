@@ -32,9 +32,9 @@ on:
       AWS_SECRET_ACCESS_KEY:
         required: true
     outputs:
-      tags: 
-        description: "Build tags"
-        value: ${{ jobs.build-image.outputs.tags }}
+      meta: 
+        description: "Meta"
+        value: ${{ jobs.meta-output.outputs.meta }}
 
 jobs:
   build-image:
@@ -59,7 +59,9 @@ jobs:
             type=sha
 
       - id: meta-output
-        run: echo ${{ toJSON(steps.meta.outputs.json) }}
+        run: |
+          echo ${{ toJSON(steps.meta.outputs.json) }}
+          echo ::set-output name=meta::${{ steps.meta.outputs.json }}
       
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
