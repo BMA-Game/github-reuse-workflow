@@ -98,44 +98,44 @@ jobs:
   get-environment:
     runs-on: ubuntu-latest
     outputs:
-      CI_REPOSITORY_SLUG: ${{ CI_REPOSITORY_SLUG }}
-      CI_REPOSITORY_OWNER: ${{ CI_REPOSITORY_OWNER }}
-      CI_REPOSITORY_OWNER_SLUG: ${{ CI_REPOSITORY_OWNER_SLUG }}
-      CI_REPOSITORY_NAME: ${{ CI_REPOSITORY_NAME }}
-      CI_REPOSITORY_NAME_SLUG: ${{ CI_REPOSITORY_NAME_SLUG }}
-      CI_REPOSITORY: ${{ CI_REPOSITORY }}
-      CI_REF_SLUG: ${{ CI_REF_SLUG }}
-      CI_ACTION_REF_NAME: ${{ CI_ACTION_REF_NAME }}
-      CI_ACTION_REF_NAME_SLUG: ${{ CI_ACTION_REF_NAME_SLUG }}
-      CI_REF_NAME: ${{ CI_REF_NAME }}
-      CI_REF_NAME_SLUG: ${{ CI_REF_NAME_SLUG }}
-      CI_REF: ${{ CI_REF }}
-      CI_HEAD_REF_SLUG: ${{ CI_HEAD_REF_SLUG }}
-      CI_HEAD_REF: ${{ CI_HEAD_REF }}
-      CI_BASE_REF_SLUG: ${{ CI_BASE_REF_SLUG }}
-      CI_BASE_REF: ${{ CI_BASE_REF }}
-      CI_SHA_SHORT: ${{ CI_SHA_SHORT }}
-      CI_SHA: ${{ CI_SHA }}
-      CI_PR_SHA_SHORT: ${{ CI_PR_SHA_SHORT }}
-      CI_PR_SHA: ${{ CI_PR_SHA }}
-      CI_PR_NUMBER: ${{ CI_PR_NUMBER }}
-      CI_PR_ID: ${{ CI_PR_ID }}
-      CI_PR_TITLE: ${{ CI_PR_TITLE }}
-      CI_PR_DESCRIPTION: ${{ CI_PR_DESCRIPTION }}
-      CI_ACTOR: ${{ CI_ACTOR }}
-      CI_EVENT_NAME: ${{ CI_EVENT_NAME }}
-      CI_RUN_ID: ${{ CI_RUN_ID }}
-      CI_RUN_NUMBER: ${{ CI_RUN_NUMBER }}
-      CI_WORKFLOW: ${{ CI_WORKFLOW }}
-      CI_ACTION: ${{ CI_ACTION }}
+      CI_REPOSITORY_SLUG: ${{ steps.ci-environment.outputs.CI_REPOSITORY_SLUG }}
+      CI_REPOSITORY_OWNER: ${{ steps.ci-environment.outputs.CI_REPOSITORY_OWNER }}
+      CI_REPOSITORY_OWNER_SLUG: ${{ steps.ci-environment.outputs.CI_REPOSITORY_OWNER_SLUG }}
+      CI_REPOSITORY_NAME: ${{ steps.ci-environment.outputs.CI_REPOSITORY_NAME }}
+      CI_REPOSITORY_NAME_SLUG: ${{ steps.ci-environment.outputs.CI_REPOSITORY_NAME_SLUG }}
+      CI_REPOSITORY: ${{ steps.ci-environment.outputs.CI_REPOSITORY }}
+      CI_REF_SLUG: ${{ steps.ci-environment.outputs.CI_REF_SLUG }}
+      CI_ACTION_REF_NAME: ${{ steps.ci-environment.outputs.CI_ACTION_REF_NAME }}
+      CI_ACTION_REF_NAME_SLUG: ${{ steps.ci-environment.outputs.CI_ACTION_REF_NAME_SLUG }}
+      CI_REF_NAME: ${{ steps.ci-environment.outputs.CI_REF_NAME }}
+      CI_REF_NAME_SLUG: ${{ steps.ci-environment.outputs.CI_REF_NAME_SLUG }}
+      CI_REF: ${{ steps.ci-environment.outputs.CI_REF }}
+      CI_HEAD_REF_SLUG: ${{ steps.ci-environment.outputs.CI_HEAD_REF_SLUG }}
+      CI_HEAD_REF: ${{ steps.ci-environment.outputs.CI_HEAD_REF }}
+      CI_BASE_REF_SLUG: ${{ steps.ci-environment.outputs.CI_BASE_REF_SLUG }}
+      CI_BASE_REF: ${{ steps.ci-environment.outputs.CI_BASE_REF }}
+      CI_SHA_SHORT: ${{ steps.ci-environment.outputs.CI_SHA_SHORT }}
+      CI_SHA: ${{ steps.ci-environment.outputs.CI_SHA }}
+      CI_PR_SHA_SHORT: ${{ steps.ci-environment.outputs.CI_PR_SHA_SHORT }}
+      CI_PR_SHA: ${{ steps.ci-environment.outputs.CI_PR_SHA }}
+      CI_PR_NUMBER: ${{ steps.ci-environment.outputs.CI_PR_NUMBER }}
+      CI_PR_ID: ${{ steps.ci-environment.outputs.CI_PR_ID }}
+      CI_PR_TITLE: ${{ steps.ci-environment.outputs.CI_PR_TITLE }}
+      CI_PR_DESCRIPTION: ${{ steps.ci-environment.outputs.CI_PR_DESCRIPTION }}
+      CI_ACTOR: ${{ steps.ci-environment.outputs.CI_ACTOR }}
+      CI_EVENT_NAME: ${{ steps.ci-environment.outputs.CI_EVENT_NAME }}
+      CI_RUN_ID: ${{ steps.ci-environment.outputs.CI_RUN_ID }}
+      CI_RUN_NUMBER: ${{ steps.ci-environment.outputs.CI_RUN_NUMBER }}
+      CI_WORKFLOW: ${{ steps.ci-environment.outputs.CI_WORKFLOW }}
+      CI_ACTION: ${{ steps.ci-environment.outputs.CI_ACTION }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - uses: FranzDiebold/github-env-vars-action@v2
 
-      - name: environment
-        id: tag
+      - name: CI Environment
+        id: ci-environment
         run: |
           echo ::set-output name=CI_REPOSITORY_SLUG::$CI_REPOSITORY_SLUG
           echo ::set-output name=CI_REPOSITORY_OWNER::$CI_REPOSITORY_OWNER
