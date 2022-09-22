@@ -13,7 +13,7 @@ on:
         description: "New release published"
         value: ${{ jobs.release-tag.outputs.new_release_published }}
       latest_tag: 
-        description: "New release published"
+        description: "Latest tag"
         value: ${{ jobs.release-tag.outputs.latest_tag }}
 
 jobs:
