@@ -27,3 +27,10 @@ jobs:
 
       - run: pnpm lint
       - run: pnpm test:cov
+
+      - name: Upload test coverage artifacts
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-coverage
+          path: coverage
