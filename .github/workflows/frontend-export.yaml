@@ -6,6 +6,9 @@ on:
       tag-version: 
         required: true
         type: string
+      env:
+        required: false
+        type: string
 
 jobs:
   frontend-export:
@@ -28,6 +31,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
+
+      - name: Set env
+        run: echo "${{ inputs.env }})" >> $GITHUB_ENV
 
       - run: pnpm export
         env:
