@@ -71,8 +71,8 @@ jobs:
           CLOUDFLARE_API_TOKEN=$(echo $SECRETS | jq .api_token | tr -d '"')
           echo "::add-mask::$CLOUDFLARE_ZONE_ID"
           echo "::add-mask::$CLOUDFLARE_API_TOKEN"
-          echo "::set-output name=zone-id::$CLOUDFLARE_ZONE_ID"
-          echo "::set-output name=api-token::$CLOUDFLARE_API_TOKEN"
+          echo "zone-id=$CLOUDFLARE_ZONE_ID" >> $GITHUB_OUTPUT
+          echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
 
       - name: Purge Cloudflare cache
         uses: jakejarvis/cloudflare-purge-action@master

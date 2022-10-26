@@ -38,10 +38,10 @@ jobs:
       - name: Tag
         id: tag
         run: |
-          echo ::set-output name=new_release_published::${{ steps.semantic.outputs.new_release_published }}
+          echo "new_release_published=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
           TAG=${{ steps.semantic.outputs.new_release_version }}
           echo $TAG
-          echo ::set-output name=tag::$TAG
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Latest tag
         id: latest-tag
@@ -49,4 +49,4 @@ jobs:
           LATEST_TAG_V=$(git describe --tags --abbrev=0)
           LATEST_TAG=${LATEST_TAG_V:1}
           echo $LATEST_TAG
-          echo ::set-output name=latest_tag::$LATEST_TAG
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT
