@@ -1,0 +1,66 @@
+name: Retag image
+
+on:
+  workflow_call:
+    inputs:
+      ecr-registry:
+        required: true
+        type: string
+      ecr-repo-name:
+        required: true
+        type: string
+      docker-tag:
+        required: true
+        type: string
+      setup-platforms:
+        required: true
+        type: string
+      build-platforms:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+        default: ap-southeast-1
+      role-to-assume:
+        required: true
+        type: string
+      role-session-name:
+        required: true
+        type: string
+      role-duration-seconds:
+        required: true
+        type: number
+        default: 1200
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  cross-account-ecr-image:
+    name: cross-account-ecr-image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.REGION }}
+
+      - name: Login to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+        id: login-ecr
+
+      - name: Pull image from another account
+        run: |
+          docker pull ${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }}
+
+      - name: Tag
+        run: |
+          docker tag ${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }} ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }}
+
+      - name: push image to ECR
+        run: |
+          docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }}
