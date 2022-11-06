@@ -3,15 +3,15 @@ name: Get tag
 on:
   workflow_call:
     outputs:
-      TAG: 
-        description: "TAG"
-        value: ${{ jobs.get-tag.outputs.TAG }}
+      tag: 
+        description: "tag"
+        value: ${{ jobs.get-tag.outputs.tag }}
 
 jobs:
   get-tag:
     runs-on: ubuntu-latest
     outputs:
-      TAG: ${{ steps.output-tag.outputs.TAG }}
+      tag: ${{ steps.output-tag.outputs.TAG }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
