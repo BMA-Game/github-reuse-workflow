@@ -33,6 +33,8 @@ jobs:
   cross-account-ecr-image:
     name: cross-account-ecr-image
     runs-on: ubuntu-latest
+    env:
+      from-image: ${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref_name }}
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -48,14 +50,17 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
         id: login-ecr
 
+      - name: Set to-image
+        run: echo "TO_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref_name }}" >> $GITHUB_ENV
+
       - name: Pull image from another account
         run: |
-          docker pull ${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }}
+          docker pull ${{ from-image }}
 
       - name: Tag
         run: |
-          docker tag ${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }} ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }}
+          docker tag ${{ from-image }} $TO_IMAGE
 
       - name: push image to ECR
         run: |
-          docker push ${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref }}
+          docker push $TO_IMAGE
