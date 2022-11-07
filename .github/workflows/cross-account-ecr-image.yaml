@@ -44,23 +44,30 @@ jobs:
           role-session-name: ${{ inputs.role-session-name }}
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
+      - name: Set source image
+        run: |
+          echo "SOURCE_IMAGE=${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Login to source ECR
+        run: |
+          aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin ${{ inputs.ecr-registry }}
+
+      - name: Pull image from another account
+        run: |
+          docker pull $SOURCE_IMAGE
+
       - name: Login to Amazon ECR
         uses: aws-actions/amazon-ecr-login@v1
         id: login-ecr
 
-      - name: Set image
+      - name: Set destination image
         run: |
-          echo "FROM_IMAGE=${{ inputs.ecr-registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref_name }}" >> $GITHUB_ENV
-          echo "TO_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - name: Pull image from another account
-        run: |
-          docker pull $FROM_IMAGE
+          echo "DESTINATION_IMAGE=${{ steps.login-ecr.outputs.registry }}/${{ inputs.ecr-repo-name }}:${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Tag
         run: |
-          docker tag $FROM_IMAGE $TO_IMAGE
+          docker tag $SOURCE_IMAGE $DESTINATION_IMAGE
 
       - name: push image to ECR
         run: |
-          docker push $TO_IMAGE
+          docker push $DESTINATION_IMAGE
