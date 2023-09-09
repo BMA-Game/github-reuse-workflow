@@ -1,0 +1,54 @@
+name: Sync S3 bucket
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        description: "Directory"
+        required: true
+        default: "dev"
+        type: string
+      bucket-name:
+        description: "Bucket Name"
+        required: true
+        type: string
+      aws-region:
+        description: "AWS Region"
+        required: true
+        type: string
+        default: ap-southeast-1
+      aws-account:
+        description: "AWS Account"
+        required: true
+        type: string
+      role-to-assume:
+        description: "Role to assume"
+        required: true
+        type: string
+      role-session-name:
+        description: "Role session name"
+        required: true
+        type: string
+      role-duration-seconds:
+        description: "Role duration seconds"
+        type: number
+        default: 1200
+
+jobs:
+  sync-s3-bucket:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+
+      - name: Sync assets to s3
+        run: aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} --delete

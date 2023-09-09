@@ -1,0 +1,55 @@
+name: Semantic release
+
+on:
+  workflow_call:
+    secrets:
+      GH_PAT:
+        required: true
+      NPM_TOKEN:
+        required: false
+    outputs:
+      tag: 
+        description: "Tag"
+        value: ${{ jobs.release-tag.outputs.tag }}
+      new_release_published: 
+        description: "New release published"
+        value: ${{ jobs.release-tag.outputs.new_release_published }}
+      latest_tag: 
+        description: "Latest tag"
+        value: ${{ jobs.release-tag.outputs.latest_tag }}
+
+jobs:
+  release-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag.outputs.tag }}
+      new_release_published: ${{ steps.tag.outputs.new_release_published }}
+      latest_tag: ${{ steps.latest-tag.outputs.latest_tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Semantic release
+        uses: cycjimmy/semantic-release-action@v3
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        with:
+          semantic_version: 19
+
+      - name: Tag
+        id: tag
+        run: |
+          echo "new_release_published=${{ steps.semantic.outputs.new_release_published }}" >> $GITHUB_OUTPUT
+          TAG=${{ steps.semantic.outputs.new_release_version }}
+          echo $TAG
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Latest tag
+        id: latest-tag
+        run: |
+          LATEST_TAG_V=$(git describe --tags --abbrev=0)
+          LATEST_TAG=${LATEST_TAG_V:1}
+          echo $LATEST_TAG
+          echo "latest_tag=$LATEST_TAG" >> $GITHUB_OUTPUT

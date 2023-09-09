@@ -1,0 +1,22 @@
+name: Get tag
+
+on:
+  workflow_call:
+    outputs:
+      tag: 
+        description: "tag"
+        value: ${{ jobs.get-tag.outputs.tag }}
+
+jobs:
+  get-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.output-tag.outputs.TAG }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Output tag
+        id: output-tag
+        run: |
+          echo "TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT

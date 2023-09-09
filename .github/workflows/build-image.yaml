@@ -1,0 +1,70 @@
+name: Build image
+
+on:
+  workflow_call:
+    inputs:
+      docker-image: 
+        required: true
+        type: string
+      docker-tag: 
+        required: true
+        type: string
+      setup-platforms:
+        required: true
+        type: string
+      build-platforms: 
+        type: string
+        default: linux/arm64
+      aws-region:
+        required: true
+        type: string
+        default: ap-southeast-1
+      role-to-assume:
+        required: true
+        type: string
+      role-session-name:
+        required: true
+        type: string
+      role-duration-seconds: 
+        required: true
+        type: number
+        default: 1200
+
+jobs:
+  build-image:
+    runs-on: Large-GitHub-hosted-runners
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+        with:
+          platforms: ${{ inputs.setup-platforms }}
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: ${{ inputs.build-platforms }}
+          push: true
+          tags: ${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

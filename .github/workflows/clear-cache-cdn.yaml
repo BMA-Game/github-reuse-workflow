@@ -1,0 +1,70 @@
+name: Clear Cache CDN
+
+on:
+  workflow_call:
+    inputs:
+      zone-id:
+        description: "Zone ID"
+        required: true
+        type: string
+      distribution-id:
+        description: "Distribution ID"
+        required: true
+        type: string
+      aws-region:
+        description: "AWS Region"
+        required: true
+        type: string
+        default: ap-southeast-1
+      aws-account:
+        description: "AWS Account"
+        required: true
+        type: string
+      role-to-assume:
+        description: "Role to assume"
+        required: true
+        type: string
+      role-session-name:
+        description: "Role session name"
+        required: true
+        type: string
+      role-duration-seconds:
+        description: "Role duration seconds"
+        type: number
+        default: 1200
+      cloudflare-credential-name:
+        description: "Cloudflare credential Name"
+        type: string
+        required: true
+
+jobs:
+  clear-cache-cdn:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+
+      - name: Invalidate Cloudfront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ inputs.distribution-id }} --paths '/*'
+
+      - name: Get Cloudflare api token
+        id: get-cloudflare-secret
+        run: |
+          SECRETS=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:ap-southeast-1:${{ inputs.aws-account }}:secret:${{ inputs.cloudflare-credential-name }} --query SecretString --output text --region ${{ inputs.aws-region }})
+          CLOUDFLARE_ZONE_ID=$(echo $SECRETS | jq '."${{ inputs.zone-id }}"' | tr -d '"')
+          CLOUDFLARE_API_TOKEN=$(echo $SECRETS | jq .api_token | tr -d '"')
+          echo "::add-mask::$CLOUDFLARE_ZONE_ID"
+          echo "::add-mask::$CLOUDFLARE_API_TOKEN"
+          echo "zone-id=$CLOUDFLARE_ZONE_ID" >> $GITHUB_OUTPUT
+          echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Purge Cloudflare cache
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ steps.get-cloudflare-secret.outputs.zone-id }}
+          CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}

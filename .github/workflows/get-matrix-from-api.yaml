@@ -1,0 +1,27 @@
+name: Get Matrix From Api
+
+on:
+  workflow_call:
+    outputs:
+      matrix:
+        description: "Matrix"
+        value: ${{ jobs.call-api-to-get-data.outputs.matrix }}
+    inputs:
+      api-url:
+        required: true
+        type: string
+    secrets:
+      GH_ACTIONS_BACKOFFICE_TOKEN:
+        required: true
+
+jobs:
+  call-api-to-get-data:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-metrix.outputs.matrix }}
+    steps:
+      - id: set-metrix
+        run: |
+          data="{\"include\": $(curl  -H "x-github-action-token: ${{secrets.GH_ACTIONS_BACKOFFICE_TOKEN}}" -G '${{ inputs.api-url }}')}"
+          echo $data
+          echo "matrix=$data" >> $GITHUB_OUTPUT

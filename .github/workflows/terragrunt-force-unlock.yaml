@@ -1,0 +1,87 @@
+name: Terragrunt force unlock
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to unlock'
+        required: true
+        type: string
+      lock-id:
+        description: 'Lock ID to unlock'
+        required: true
+        type: string
+      path:
+        description: 'Path to unlock'
+        required: true
+        type: string
+      tg-version:
+        required: false
+        type: string
+        default: 'latest'
+      aws-region:
+        required: true
+        type: string
+        default: ap-southeast-1
+      role-to-assume:
+        required: true
+        type: string
+      role-session-name:
+        required: true
+        type: string
+      role-duration-seconds: 
+        required: true
+        type: number
+        default: 1200
+    secrets:
+      GH_ACTIONS_PRIVATE_KEY:
+        required: true
+      GH_PAT:
+        required: true
+
+jobs:
+  force-unlock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      WORKING_DIR: ${{ github.workspace }}/terragrunt/${{ inputs.environment }}/${{ inputs.path }}
+    steps:
+      - name: Add SSH key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p /home/runner/.ssh
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
+          ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v1.3.2
+        with:
+          terragrunt_version: ${{ inputs.tg-version }}
+
+      - name: Terragrunt Init
+        id: init
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          terragrunt init -upgrade --terragrunt-working-dir ${{ env.WORKING_DIR }}
+
+      - name: Terraform unlock
+        id: force-unlock
+        run: |
+          terragrunt force-unlock --terragrunt-working-dir ${{ env.WORKING_DIR }} -force ${{ github.event.inputs.lock-id }}

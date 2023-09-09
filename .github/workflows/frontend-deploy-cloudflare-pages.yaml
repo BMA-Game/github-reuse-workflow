@@ -1,0 +1,88 @@
+name: Frontend deploy
+
+on:
+  workflow_call:
+    inputs:
+      aws-account:
+        required: true
+        type: string
+      aws-region:
+        required: true
+        type: string
+        default: ap-southeast-1
+      role-to-assume:
+        required: true
+        type: string
+      role-session-name:
+        required: true
+        type: string
+      role-duration-seconds: 
+        required: true
+        type: number
+        default: 1200
+      cloudflare-account-id:
+        required: true
+        type: string
+      cloudflare-credential:
+        required: true
+        type: string
+      secret-zone-id-key:
+        required: true
+        type: string
+      cloudflare-page-project-name:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
+      download-artifact-name:
+        required: false
+        default: out
+        type: string
+
+jobs:
+  frontend-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.download-artifact-name }}
+
+      - name: Remove 404.html
+        run: rm 404.html
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+
+      - name: Get Cloudflare api token
+        id: get-cloudflare-secret
+        run: |
+          SECRETS=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:ap-southeast-1:${{ inputs.aws-account }}:secret:${{ inputs.cloudflare-credential }} --query SecretString --output text --region ${{ inputs.aws-region }})
+          CLOUDFLARE_ZONE_ID=$(echo $SECRETS | jq '."${{ inputs.secret-zone-id-key }}"' | tr -d '"')
+          CLOUDFLARE_API_TOKEN=$(echo $SECRETS | jq .api_token | tr -d '"')
+          echo "::add-mask::$CLOUDFLARE_ZONE_ID"
+          echo "::add-mask::$CLOUDFLARE_API_TOKEN"
+          echo "zone-id=$CLOUDFLARE_ZONE_ID" >> $GITHUB_OUTPUT
+          echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
+
+      - name: Publish
+        uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}
+        with:
+          apiToken: ${{ steps.get-cloudflare-secret.outputs.api-token }}
+          accountId: ${{ inputs.cloudflare-account-id }}
+          command: pages publish --project-name=${{ inputs.cloudflare-page-project-name }} --branch ${{ inputs.branch }} ./
+
+      - name: Purge Cloudflare cache
+        uses: jakejarvis/cloudflare-purge-action@master
+        env:
+          CLOUDFLARE_ZONE: ${{ steps.get-cloudflare-secret.outputs.zone-id }}
+          CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}
+

@@ -1,0 +1,50 @@
+name: Frontend export
+
+on:
+  workflow_call:
+    inputs:
+      tag-version: 
+        required: true
+        type: string
+      upload-artifact-name:
+        required: false
+        default: out
+        type: string
+      env:
+        required: false
+        type: string
+
+jobs:
+  frontend-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: pnpm/action-setup@v2
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 8
+          run_install: false
+      
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
+
+      - name: Set env
+        run: echo -e "${{ inputs.env }}" >> $GITHUB_ENV
+
+      - run: pnpm export
+        env:
+          TAG_VERSION: ${{ inputs.tag-version }}
+
+      - name: Upload out artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.upload-artifact-name }}
+          path: out
