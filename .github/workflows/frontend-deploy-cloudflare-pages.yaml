@@ -16,7 +16,7 @@ on:
       role-session-name:
         required: true
         type: string
-      role-duration-seconds: 
+      role-duration-seconds:
         required: true
         type: number
         default: 1200
@@ -72,7 +72,7 @@ jobs:
           echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
 
       - name: Publish
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@v3.1.1
         env:
           CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}
         with:
@@ -85,4 +85,3 @@ jobs:
         env:
           CLOUDFLARE_ZONE: ${{ steps.get-cloudflare-secret.outputs.zone-id }}
           CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}
-
