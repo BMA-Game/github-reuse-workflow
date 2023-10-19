@@ -15,10 +15,6 @@ on:
       matrix-path:
         required: true
         type: string
-      tf-version:
-        required: false
-        type: string
-        default: '1.4.6'
       tg-version:
         required: false
         type: string
@@ -76,18 +72,22 @@ jobs:
           role-session-name: ${{ inputs.role-session-name }}
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
-      - name: Terragrunt Init
-        uses: gruntwork-io/terragrunt-action@v1.0.8
+      - name: Setup Terragrunt
+        uses: autero1/action-terragrunt@v1.3.2
         with:
-          tf_version: ${{ inputs.tf-version }}
-          tg_version: ${{ inputs.tg-version }}
-          tg_dir: ${{ env.WORKING_DIR }}
-          tg_command: init -upgrade
+          terragrunt_version: ${{ inputs.tg-version }}
+
+      - name: Terragrunt Init
+        id: init
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          terragrunt init -upgrade --terragrunt-working-dir ${{ env.WORKING_DIR }}
       
       - name: Terraform Apply
-        uses: gruntwork-io/terragrunt-action@v1.0.8
-        with:
-          tf_version: ${{ inputs.tf-version }}
-          tg_version: ${{ inputs.tg-version }}
-          tg_dir: ${{ env.WORKING_DIR }}
-          tg_command: apply
+        id: apply
+        env:
+          DOCKER_IMAGE: ${{ inputs.docker-image }}
+          DOCKER_TAG: ${{ inputs.docker-tag }}
+        run: |
+          terragrunt apply --terragrunt-working-dir ${{ env.WORKING_DIR }} -auto-approve
