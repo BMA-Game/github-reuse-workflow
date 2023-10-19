@@ -22,7 +22,7 @@ on:
       tg-version:
         required: false
         type: string
-        default: 'v0.49.1'
+        default: '0.50.8'
       aws-region:
         required: true
         type: string
