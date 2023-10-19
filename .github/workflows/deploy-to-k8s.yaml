@@ -79,7 +79,11 @@ jobs:
       - name: Terragrunt Init
         uses: gruntwork-io/terragrunt-action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          INPUT_PRE_EXEC_1: mkdir -p /home/runner/.ssh
+          INPUT_PRE_EXEC_2: ssh-agent -a /tmp/ssh_agent.sock > /dev/null
+          INPUT_PRE_EXEC_3: ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
+          INPUT_PRE_EXEC_4: ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
@@ -89,7 +93,11 @@ jobs:
       - name: Terraform Apply
         uses: gruntwork-io/terragrunt-action@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACTIONS_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          INPUT_PRE_EXEC_1: mkdir -p /home/runner/.ssh
+          INPUT_PRE_EXEC_2: ssh-agent -a /tmp/ssh_agent.sock > /dev/null
+          INPUT_PRE_EXEC_3: ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
+          INPUT_PRE_EXEC_4: ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
