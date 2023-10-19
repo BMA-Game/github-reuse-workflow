@@ -77,7 +77,7 @@ jobs:
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
       - name: Terragrunt Init
-        uses: gruntwork-io/terragrunt-action@v1.0.8
+        uses: gruntwork-io/terragrunt-action@v1
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
@@ -85,7 +85,7 @@ jobs:
           tg_command: init -upgrade
       
       - name: Terraform Apply
-        uses: gruntwork-io/terragrunt-action@v1.0.8
+        uses: gruntwork-io/terragrunt-action@v1
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
