@@ -80,10 +80,12 @@ jobs:
         uses: gruntwork-io/terragrunt-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          INPUT_PRE_EXEC_1: mkdir -p /home/runner/.ssh
-          INPUT_PRE_EXEC_2: ssh-agent -a /tmp/ssh_agent.sock > /dev/null
-          INPUT_PRE_EXEC_3: ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
-          INPUT_PRE_EXEC_4: ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
+          # configure git to use custom token to clone repository.
+          INPUT_PRE_EXEC_1: |
+            git config --global url."https://user:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
+          # print git configuration
+          INPUT_PRE_EXEC_2: |
+            git config --global --list
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
@@ -94,12 +96,14 @@ jobs:
         uses: gruntwork-io/terragrunt-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          INPUT_PRE_EXEC_1: mkdir -p /home/runner/.ssh
-          INPUT_PRE_EXEC_2: ssh-agent -a /tmp/ssh_agent.sock > /dev/null
-          INPUT_PRE_EXEC_3: ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
-          INPUT_PRE_EXEC_4: ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
+          # configure git to use custom token to clone repository.
+          INPUT_PRE_EXEC_1: |
+            git config --global url."https://user:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
+          # print git configuration
+          INPUT_PRE_EXEC_2: |
+            git config --global --list
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
           tg_dir: ${{ env.WORKING_DIR }}
-          tg_command: apply
+          tg_command: apply -auto-approve
