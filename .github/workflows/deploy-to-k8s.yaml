@@ -53,15 +53,6 @@ jobs:
     env:
       WORKING_DIR: ${{ github.workspace }}/terragrunt/${{ inputs.environment }}/${{ matrix.path }}
     steps:
-      - name: Add SSH key
-        env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: |
-          mkdir -p /home/runner/.ssh
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
-          ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
-
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -80,12 +71,10 @@ jobs:
         uses: gruntwork-io/terragrunt-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          # configure git to use custom token to clone repository.
           INPUT_PRE_EXEC_1: |
             git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
           INPUT_PRE_EXEC_2: |
             git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "ssh://git@github.com"
-          # print git configuration
           INPUT_PRE_EXEC_3: |
             git config --global --list
         with:
@@ -98,14 +87,8 @@ jobs:
         uses: gruntwork-io/terragrunt-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-          # configure git to use custom token to clone repository.
-          INPUT_PRE_EXEC_1: |
-            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
-          INPUT_PRE_EXEC_2: |
-            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "ssh://git@github.com"
-          # print git configuration
-          INPUT_PRE_EXEC_3: |
-            git config --global --list
+          DOCKER_IMAGE: ${{ inputs.docker-image }}
+          DOCKER_TAG: ${{ inputs.docker-tag }}
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
