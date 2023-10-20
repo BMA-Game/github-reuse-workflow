@@ -75,8 +75,6 @@ jobs:
             git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
           INPUT_PRE_EXEC_2: |
             git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "ssh://git@github.com"
-          INPUT_PRE_EXEC_3: |
-            git config --global --list
         with:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
