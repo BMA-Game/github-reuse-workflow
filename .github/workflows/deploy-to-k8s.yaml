@@ -15,10 +15,14 @@ on:
       matrix-path:
         required: true
         type: string
+      tf-version:
+        required: false
+        type: string
+        default: '1.4.6'
       tg-version:
         required: false
         type: string
-        default: 'v0.49.1'
+        default: '0.50.8'
       aws-region:
         required: true
         type: string
@@ -72,22 +76,40 @@ jobs:
           role-session-name: ${{ inputs.role-session-name }}
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
-      - name: Setup Terragrunt
-        uses: autero1/action-terragrunt@v1.3.2
-        with:
-          terragrunt_version: ${{ inputs.tg-version }}
-
       - name: Terragrunt Init
-        id: init
+        uses: gruntwork-io/terragrunt-action@v1
         env:
-          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
-        run: |
-          terragrunt init -upgrade --terragrunt-working-dir ${{ env.WORKING_DIR }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          # configure git to use custom token to clone repository.
+          INPUT_PRE_EXEC_1: |
+            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
+          INPUT_PRE_EXEC_2: |
+            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "ssh://git@github.com:"
+          # print git configuration
+          INPUT_PRE_EXEC_3: |
+            git config --global --list
+        with:
+          tf_version: ${{ inputs.tf-version }}
+          tg_version: ${{ inputs.tg-version }}
+          tg_dir: ${{ env.WORKING_DIR }}
+          tg_command: init -upgrade
       
       - name: Terraform Apply
-        id: apply
+        uses: gruntwork-io/terragrunt-action@v1
         env:
-          DOCKER_IMAGE: ${{ inputs.docker-image }}
-          DOCKER_TAG: ${{ inputs.docker-tag }}
-        run: |
-          terragrunt apply --terragrunt-working-dir ${{ env.WORKING_DIR }} -auto-approve
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          # configure git to use custom token to clone repository.
+          INPUT_PRE_EXEC_1: |
+            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
+          INPUT_PRE_EXEC_2: |
+            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "ssh://git@github.com:"
+          # print git configuration
+          INPUT_PRE_EXEC_3: |
+            git config --global --list
+        with:
+          tf_version: ${{ inputs.tf-version }}
+          tg_version: ${{ inputs.tg-version }}
+          tg_dir: ${{ env.WORKING_DIR }}
+          tg_command: apply -auto-approve
+
+          
