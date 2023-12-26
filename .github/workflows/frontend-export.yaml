@@ -37,7 +37,9 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Set env
-        run: echo -e "${{ inputs.env }}" >> $GITHUB_ENV
+        run: |
+          echo -e "${{ inputs.env }}" >> $GITHUB_ENV
+          echo -e "${{ secrets }}" >> $GITHUB_ENV
 
       - run: pnpm export
         env:
