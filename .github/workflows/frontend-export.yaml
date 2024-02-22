@@ -13,6 +13,9 @@ on:
       env:
         required: false
         type: string
+    secrets:
+      mySecrets:
+        required: false
 
 jobs:
   frontend-export:
@@ -37,7 +40,9 @@ jobs:
         run: pnpm i --frozen-lockfile
 
       - name: Set env
-        run: echo -e "${{ inputs.env }}" >> $GITHUB_ENV
+        run: |
+          echo -e "${{ inputs.env }}" >> $GITHUB_ENV
+          echo -e "${{ secrets.mySecrets }}" >> $GITHUB_ENV
 
       - run: pnpm export
         env:
