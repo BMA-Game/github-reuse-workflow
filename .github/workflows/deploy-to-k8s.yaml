@@ -54,7 +54,7 @@ jobs:
       WORKING_DIR: ${{ github.workspace }}/terragrunt/${{ inputs.environment }}/${{ matrix.path }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
           token: ${{ secrets.GH_PAT }}
@@ -68,7 +68,7 @@ jobs:
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
       - name: Terragrunt Init
-        uses: gruntwork-io/terragrunt-action@v1
+        uses: gruntwork-io/terragrunt-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           INPUT_PRE_EXEC_1: |
@@ -82,7 +82,7 @@ jobs:
           tg_command: init -upgrade
       
       - name: Terraform Apply
-        uses: gruntwork-io/terragrunt-action@v1
+        uses: gruntwork-io/terragrunt-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           DOCKER_IMAGE: ${{ inputs.docker-image }}
