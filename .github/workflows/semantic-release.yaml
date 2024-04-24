@@ -8,13 +8,13 @@ on:
       NPM_TOKEN:
         required: false
     outputs:
-      tag: 
+      tag:
         description: "Tag"
         value: ${{ jobs.release-tag.outputs.tag }}
-      new_release_published: 
+      new_release_published:
         description: "New release published"
         value: ${{ jobs.release-tag.outputs.new_release_published }}
-      latest_tag: 
+      latest_tag:
         description: "Latest tag"
         value: ${{ jobs.release-tag.outputs.latest_tag }}
 
@@ -36,7 +36,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         with:
-          semantic_version: 19
+          semantic_version: 23.0.5
 
       - name: Tag
         id: tag
