@@ -78,7 +78,7 @@ jobs:
         with:
           apiToken: ${{ steps.get-cloudflare-secret.outputs.api-token }}
           accountId: ${{ inputs.cloudflare-account-id }}
-          command: pages publish --project-name=${{ inputs.cloudflare-page-project-name }} --branch ${{ inputs.branch }} ./
+          command: pages deploy --project-name=${{ inputs.cloudflare-page-project-name }} --branch ${{ inputs.branch }} ./
 
       - name: Purge Cloudflare cache
         uses: jakejarvis/cloudflare-purge-action@master
