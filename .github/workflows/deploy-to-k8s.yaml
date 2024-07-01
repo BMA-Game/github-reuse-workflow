@@ -6,10 +6,10 @@ on:
       environment:
         required: true
         type: string
-      docker-image: 
+      docker-image:
         required: true
         type: string
-      docker-tag: 
+      docker-tag:
         required: true
         type: string
       matrix-path:
@@ -33,7 +33,7 @@ on:
       role-session-name:
         required: true
         type: string
-      role-duration-seconds: 
+      role-duration-seconds:
         required: true
         type: number
         default: 1200
@@ -58,7 +58,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.GH_PAT }}
-      
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -80,7 +80,7 @@ jobs:
           tg_version: ${{ inputs.tg-version }}
           tg_dir: ${{ env.WORKING_DIR }}
           tg_command: init -upgrade
-      
+
       - name: Terraform Apply
         uses: gruntwork-io/terragrunt-action@v2.1.1
         env:
@@ -91,6 +91,4 @@ jobs:
           tf_version: ${{ inputs.tf-version }}
           tg_version: ${{ inputs.tg-version }}
           tg_dir: ${{ env.WORKING_DIR }}
-          tg_command: apply -auto-approve
-
-          
+          tg_command: apply -auto-approve --terragrunt-debug
