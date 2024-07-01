@@ -81,6 +81,11 @@ jobs:
           tg_dir: ${{ env.WORKING_DIR }}
           tg_command: init -upgrade
 
+      - name: Enable GitHub Debug Mode
+        run: |
+          echo "Enabling debug mode"
+        if: ${{ always() }}
+
       - name: Terraform Apply
         uses: gruntwork-io/terragrunt-action@v2.1.1
         env:
