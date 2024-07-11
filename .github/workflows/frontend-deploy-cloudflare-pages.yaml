@@ -80,8 +80,8 @@ jobs:
           accountId: ${{ inputs.cloudflare-account-id }}
           command: pages deploy --project-name=${{ inputs.cloudflare-page-project-name }} --branch ${{ inputs.branch }} ./
 
-      - name: Purge Cloudflare cache
-        uses: jakejarvis/cloudflare-purge-action@master
-        env:
-          CLOUDFLARE_ZONE: ${{ steps.get-cloudflare-secret.outputs.zone-id }}
-          CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}
+      # - name: Purge Cloudflare cache
+      #   uses: jakejarvis/cloudflare-purge-action@master
+      #   env:
+      #     CLOUDFLARE_ZONE: ${{ steps.get-cloudflare-secret.outputs.zone-id }}
+      #     CLOUDFLARE_TOKEN: ${{ steps.get-cloudflare-secret.outputs.api-token }}
