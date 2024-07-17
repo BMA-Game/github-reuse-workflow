@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       docker-tag:
-        required: true
+        required: false
         type: string
       matrix-path:
         required: true
