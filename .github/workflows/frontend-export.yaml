@@ -3,7 +3,7 @@ name: Frontend export
 on:
   workflow_call:
     inputs:
-      tag-version: 
+      tag-version:
         required: true
         type: string
       upload-artifact-name:
@@ -24,13 +24,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 8
+          version: 9
           run_install: false
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
