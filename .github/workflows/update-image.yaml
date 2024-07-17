@@ -1,0 +1,30 @@
+name: Update image
+
+on:
+	workflow_call:
+		input:
+      path:
+        required: true
+        type: string
+      tag:
+        required: true
+        type: string
+
+jobs:
+  change-image-tag-and-commit:
+    needs: [call-workflow-get-ci-environment, call-workflow-build-image]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Set Image in Terragrunt
+        run: |
+          sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./${{ inputs.path }}
+
+      - name: Commit files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'ci: 🎡 update image cloud run dev with sha-${{ inputs.tag }}'
