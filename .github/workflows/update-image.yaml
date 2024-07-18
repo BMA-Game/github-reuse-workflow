@@ -9,6 +9,9 @@ on:
       tag:
         required: true
         type: string
+    secrets:
+      GH_PAT:
+        required: true
 
 jobs:
   change-image-tag-and-commit:

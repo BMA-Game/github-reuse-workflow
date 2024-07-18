@@ -33,8 +33,6 @@ on:
 jobs:
   build-image:
     runs-on: Large-GitHub-hosted-runners
-    outputs:
-      tags: ${{ steps.meta.outputs.tags }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4

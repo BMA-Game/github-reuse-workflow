@@ -39,7 +39,6 @@ on:
         default: 1200
     secrets:
       GH_ACTIONS_PRIVATE_KEY:
-        required: true
       GH_PAT:
         required: true
 
