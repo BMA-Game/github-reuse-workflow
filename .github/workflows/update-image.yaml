@@ -12,6 +12,9 @@ on:
       env:
         required: true
         type: string
+      branch:
+        required: true
+        type: string
     secrets:
       GH_PAT:
         required: true
@@ -33,4 +36,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'ci: 🎡 update image terragrunt ${{ inputs.env }} with ${{ inputs.tag }}'
-          branch: ${{ inputs.env }} == 'dev' ? 'develop' : 'main'
+          branch: ${{ inputs.branch }}
