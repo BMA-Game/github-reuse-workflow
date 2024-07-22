@@ -9,6 +9,12 @@ on:
       tag:
         required: true
         type: string
+      env:
+        required: true
+        type: string
+      branch:
+        required: true
+        type: string
     secrets:
       GH_PAT:
         required: true
@@ -29,4 +35,5 @@ jobs:
       - name: Commit files
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'ci: 🎡 update image terragrunt with ${{ inputs.tag }}'
+          commit_message: 'ci: 🎡 update image terragrunt ${{ inputs.env }} with ${{ inputs.tag }}'
+          branch: ${{ inputs.branch }}
