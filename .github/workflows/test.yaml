@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    runs-on: Large-GitHub-hosted-runners
+    runs-on: 4-core-arm64-GitHub-hosted-runners
     steps:
       - name: Checkout
         uses: actions/checkout@v4
