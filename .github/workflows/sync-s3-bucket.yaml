@@ -36,7 +36,7 @@ on:
 
 jobs:
   sync-s3-bucket:
-    runs-on: Large-GitHub-hosted-runners
+    runs-on: 4-core-arm64-GitHub-hosted-runners
     steps:
       - uses: actions/checkout@v4
         with:
