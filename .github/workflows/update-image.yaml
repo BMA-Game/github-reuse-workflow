@@ -4,7 +4,10 @@ on:
   workflow_call:
     inputs:
       path:
-        required: true
+        required: false
+        type: string
+      paths:
+        required: false
         type: string
       tag:
         required: true
@@ -29,8 +32,17 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - name: Set Image in Terragrunt
+        if: ${{ inputs.path != '' }}
         run: |
           sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./${{ inputs.path }}
+
+      - name: Set Image in Terragrunt
+        if: ${{ inputs.paths != '' }}
+        run: |
+          IFS=',' read -ra PATHS <<< "${{ inputs.paths }}"
+          for path in "${PATHS[@]}"; do
+            sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$path
+          done
 
       - name: Commit files
         uses: stefanzweifel/git-auto-commit-action@v5
