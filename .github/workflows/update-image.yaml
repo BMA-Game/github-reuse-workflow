@@ -41,6 +41,7 @@ jobs:
         run: |
           IFS=','
           for path in $paths; do
+            echo $path
             sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$path
           done
 
