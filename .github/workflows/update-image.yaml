@@ -33,9 +33,9 @@ jobs:
 
       - name: Set Image in Terragrunt
         env:
-          IFS: ','
           PATHS: ${{ inputs.paths ? inputs.paths : inputs.path }}
         run: |
+          IFS=','
           for path in ${{ env.PATHS }}; do
             sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$path
           done
