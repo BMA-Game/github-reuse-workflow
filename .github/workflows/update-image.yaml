@@ -36,7 +36,7 @@ jobs:
           PATHS: ${{ inputs.paths || inputs.path }}
         run: |
           IFS=','
-          for path in $PATHS; do
+          for path in $(echo $PATHS | tr -d ' '); do
             sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$path
           done
 
