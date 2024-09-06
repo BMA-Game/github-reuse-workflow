@@ -32,15 +32,11 @@ jobs:
           token: ${{ secrets.GH_PAT }}
 
       - name: Set Image in Terragrunt
-        if: ${{ inputs.path != '' }}
+        env:
+          IFS: ','
+          PATHS: ${{ inputs.paths ? inputs.paths : inputs.path }}
         run: |
-          sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./${{ inputs.path }}
-
-      - name: Set Image in Terragrunt
-        if: ${{ inputs.paths != '' }}
-        run: |
-          IFS=','
-          for path in ${{ inputs.paths }}; do
+          for path in ${{ env.PATHS }}; do
             sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$path
           done
 
