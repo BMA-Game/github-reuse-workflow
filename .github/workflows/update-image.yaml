@@ -36,8 +36,9 @@ jobs:
           PATHS: ${{ inputs.paths || inputs.path }}
         run: |
           IFS=','
-          for path in $(echo $PATHS | tr -d ' '); do
-            sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$path
+          for path in $PATHS; do
+            trim_path=$(echo $path | tr -d ' ')
+            sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$trim_path
           done
 
       - name: Commit files
