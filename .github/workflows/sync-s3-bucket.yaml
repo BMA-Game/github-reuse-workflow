@@ -32,7 +32,7 @@ on:
       role-duration-seconds:
         description: "Role duration seconds"
         type: number
-        default: 1200
+        default: 1800
 
 jobs:
   sync-s3-bucket:
