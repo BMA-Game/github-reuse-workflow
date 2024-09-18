@@ -1,0 +1,30 @@
+name: Create Release Docker Tag
+
+on:
+  workflow_call:
+    inputs:
+      sha_short: 
+        required: true
+        type: string
+    outputs:
+      docker_tag:
+        description: "Docker Tag"
+        value: ${{ jobs.create-docker-tag.outputs.docker_tag }}
+      release_version: 
+        description: "Release Version"
+        value: ${{ jobs.create-docker-tag.outputs.release_version }}
+
+jobs:
+  create-docker-tag:
+    runs-on: ubuntu-latest
+    outputs:
+      release_version: ${{ steps.extract_release_version.outputs.release_version }}
+      docker_tag: ${{ steps.create_docker_tag.outputs.docker_tag }}
+    steps:
+      - name: Extract Release Version
+        id: extract_release_version
+        shell: bash
+        run: echo "release_version=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/release/}}" >> $GITHUB_OUTPUT
+      - name: Create Docker Tag
+        id: create_docker_tag
+        run: echo "docker_tag=release-${{ steps.extract_release_version.outputs.release_version }}-${{ inputs.sha_short }}" >> $GITHUB_OUTPUT
