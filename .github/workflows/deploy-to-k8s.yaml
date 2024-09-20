@@ -67,7 +67,7 @@ jobs:
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
       - name: Terragrunt Init
-        uses: gruntwork-io/terragrunt-action@v2.1.1
+        uses: gruntwork-io/terragrunt-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           INPUT_PRE_EXEC_1: |
@@ -86,7 +86,7 @@ jobs:
         if: ${{ always() }}
 
       - name: Terraform Apply
-        uses: gruntwork-io/terragrunt-action@v2.1.1
+        uses: gruntwork-io/terragrunt-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
           DOCKER_IMAGE: ${{ inputs.docker-image }}
