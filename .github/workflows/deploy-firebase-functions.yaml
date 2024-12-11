@@ -22,15 +22,15 @@ jobs:
       contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./functions
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
           token: ${{ secrets.GH_PAT || github.token }}
-
-      - name: Change directory
-        run: cd functions
 
       - uses: pnpm/action-setup@v3
         name: Install pnpm
