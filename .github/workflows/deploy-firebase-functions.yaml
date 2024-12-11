@@ -29,17 +29,25 @@ jobs:
           submodules: true
           token: ${{ secrets.GH_PAT || github.token }}
 
-      - name: Auth GCP 
-        id: auth
-        uses: google-github-actions/auth@v1
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        id: pnpm-install
         with:
-          workload_identity_provider: ${{ inputs.workload_identity_provider }}
-          service_account: ${{ inputs.service_account }}
+          version: 9
+          run_install: false
 
-    #   - name: 'Deploy functions'
-    #     id: 'deploy'
-    #     uses: 'google-github-actions/deploy-cloud-functions@v2'
-    #     with:
-    #       name: ${{ inputs.function_name }}
-    #       runtime: 'nodejs20'
-    #       region: 'asia-southeast1'
+      - name: Install Firebase CLI
+        run: pnpm install -g firebase-tools
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ inputs.workload-identity-provider }}
+          service_account: ${{ inputs.service-account }}
+
+      - id: deploy
+        run: firebase deploy --only functions
