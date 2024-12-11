@@ -29,6 +29,9 @@ jobs:
           submodules: true
           token: ${{ secrets.GH_PAT || github.token }}
 
+      - name: Change directory
+        run: cd functions
+
       - uses: pnpm/action-setup@v3
         name: Install pnpm
         id: pnpm-install
