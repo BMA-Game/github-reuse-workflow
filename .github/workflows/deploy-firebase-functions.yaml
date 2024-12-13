@@ -50,5 +50,8 @@ jobs:
           service_account: ${{ inputs.service_account }}
           create_credentials_file: "true"
 
+      - name: Firebase Authentication
+        run: firebase login:ci --no-localhost
+
       - id: deploy
-        run: firebase deploy --only functions --token
+        run: firebase deploy --only functions
