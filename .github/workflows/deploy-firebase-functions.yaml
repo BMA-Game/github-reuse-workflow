@@ -49,9 +49,6 @@ jobs:
           workload_identity_provider: ${{ inputs.workload_identity_provider }}
           service_account: ${{ inputs.service_account }}
 
-      - name: Authenticate with Firebase
-        run: firebase login:ci --no-localhost
-
       - name: Verify Firebase Authentication
         run: firebase projects:list
 
