@@ -53,7 +53,9 @@ jobs:
           create_credentials_file: "true"
 
       - name: Set GOOGLE_APPLICATION_CREDENTIALS
-        run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
       - id: deploy
         run: firebase deploy --only functions
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ steps.auth.outputs.credentials_file_path }}
