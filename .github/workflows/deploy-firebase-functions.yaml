@@ -55,6 +55,12 @@ jobs:
       - name: Set GOOGLE_APPLICATION_CREDENTIALS
         run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
+      - name: Verify GOOGLE_APPLICATION_CREDENTIALS
+        run: echo ${{ env.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      - name: Verify Firebase Auth
+        run: firebase projects:list
+
       - id: deploy
         run: firebase deploy --only functions
         env:
