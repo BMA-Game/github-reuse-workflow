@@ -49,8 +49,6 @@ jobs:
           workload_identity_provider: ${{ inputs.workload_identity_provider }}
           service_account: ${{ inputs.service_account }}
 
-      - name: Firebase Authentication
-        run: firebase login
 
       - id: deploy
         run: firebase deploy --only functions
