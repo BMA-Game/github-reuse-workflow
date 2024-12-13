@@ -50,7 +50,7 @@ jobs:
           service_account: ${{ inputs.service_account }}
 
       - name: Firebase Authentication
-        run: firebase login:ci
+        run: firebase login
 
       - id: deploy
         run: firebase deploy --only functions
