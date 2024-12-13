@@ -50,7 +50,7 @@ jobs:
           service_account: ${{ inputs.service_account }}
 
       - name: Firebase Authentication
-        run: firebase login:ci --interactive
+        run: gcloud auth application-default login --no-browser
 
       - id: deploy
         run: firebase deploy --only functions
