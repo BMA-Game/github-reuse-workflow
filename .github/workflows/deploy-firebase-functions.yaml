@@ -49,5 +49,8 @@ jobs:
           workload_identity_provider: ${{ inputs.workload_identity_provider }}
           service_account: ${{ inputs.service_account }}
 
+      - name: Verify Firebase Authentication
+        run: firebase projects:list
+
       - id: deploy
         run: firebase deploy --only functions
