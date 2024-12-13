@@ -22,15 +22,18 @@ jobs:
       contents: 'read'
       id-token: 'write'
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./functions
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
           token: ${{ secrets.GH_PAT || github.token }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
 
       - uses: pnpm/action-setup@v3
         name: Install pnpm
@@ -41,11 +44,6 @@ jobs:
 
       - name: Install Firebase CLI
         run: pnpm install -g firebase-tools
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: 'pnpm'
 
       - uses: google-github-actions/auth@v2
         with:
