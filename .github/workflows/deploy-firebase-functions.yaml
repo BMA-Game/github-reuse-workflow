@@ -44,14 +44,16 @@ jobs:
       - name: Install Firebase CLI
         run: pnpm install -g firebase-tools
 
-      - uses: google-github-actions/auth@v2
+      - id: auth
+        name: GCP Authentication
+        uses: google-github-actions/auth@v2
         with:
           workload_identity_provider: ${{ inputs.workload_identity_provider }}
           service_account: ${{ inputs.service_account }}
           create_credentials_file: "true"
 
-      - name: Firebase Authentication
-        run: firebase login:ci --no-localhost
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.access_token }}" >> $GITHUB_ENV
 
       - id: deploy
         run: firebase deploy --only functions
