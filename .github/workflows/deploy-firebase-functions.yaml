@@ -46,8 +46,8 @@ jobs:
 
       - uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ inputs.workload-identity-provider }}
-          service_account: ${{ inputs.service-account }}
+          workload_identity_provider: ${{ inputs.workload_identity_provider }}
+          service_account: ${{ inputs.service_account }}
 
       - id: deploy
         run: firebase deploy --only functions
