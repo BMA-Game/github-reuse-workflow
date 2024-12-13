@@ -49,6 +49,6 @@ jobs:
           workload_identity_provider: ${{ inputs.workload_identity_provider }}
           service_account: ${{ inputs.service_account }}
           create_credentials_file: "true"
-          
+
       - id: deploy
-        run: firebase deploy --only functions
+        run: firebase deploy --only functions --token
