@@ -56,7 +56,7 @@ jobs:
         run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
       - name: Verify GOOGLE_APPLICATION_CREDENTIALS
-        run: gcloud auth application-default login --impersonate-service-account ${{ inputs.service_account }}
+        run: gcloud auth application-default login --impersonate-service-account ${{ inputs.service_account }} --quiet
 
       - name: Verify Firebase Auth
         run: firebase projects:list
