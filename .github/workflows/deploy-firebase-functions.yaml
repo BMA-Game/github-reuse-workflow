@@ -12,9 +12,9 @@ on:
       function_name:
         required: true
         type: string
-      google_application_credentials:
+    secrets:
+      GOOGLE_APPLICATION_CREDENTIALS:
         required: true
-        type: string
 
 jobs:
   deploy:
