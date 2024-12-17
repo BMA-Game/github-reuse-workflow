@@ -39,7 +39,8 @@ jobs:
         id: pnpm-install
         with:
           version: 9
-          run_install: false
+          run_install: |
+            - recursive: true
 
       - name: Install Firebase CLI
         run: pnpm install -g firebase-tools
