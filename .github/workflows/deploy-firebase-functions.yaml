@@ -50,23 +50,9 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           service_account: ${{ inputs.service_account }}
-          # credentials_json: ${{ inputs.google_application_credentials }}
           workload_identity_provider: ${{ inputs.workload_identity_provider }}
           create_credentials_file: true
           export_environment_variables: true
-          # access_token_lifetime: 60s
-
-      # - name: Verify Auth
-      #   run: gcloud iam service-accounts get-iam-policy ${{ inputs.service_account }}
-
-      # - name: cat $GOOGLE_APPLICATION_CREDENTIALS
-      #   run: cat $GOOGLE_APPLICATION_CREDENTIALS
-
-      # - name: Login to Firebase
-      #   run: firebase login:ci
-
-      # - name: Verify Firebase Auth
-      #   run: firebase projects:list
 
       - id: deploy
         run: firebase deploy --only functions
