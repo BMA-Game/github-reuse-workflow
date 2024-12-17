@@ -52,8 +52,8 @@ jobs:
           service_account: ${{ inputs.service_account }}
           create_credentials_file: true
 
-      # - name: Set GOOGLE_APPLICATION_CREDENTIALS
-      #   run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
+      - name: Set GOOGLE_APPLICATION_CREDENTIALS
+        run: echo "GOOGLE_APPLICATION_CREDENTIALS=${{ steps.auth.outputs.credentials_file_path }}" >> $GITHUB_ENV
 
       - name: Login to Firebase
         run: firebase login:ci
