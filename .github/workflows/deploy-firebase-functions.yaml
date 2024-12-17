@@ -58,6 +58,9 @@ jobs:
       - name: echo $GOOGLE_APPLICATION_CREDENTIALS
         run: echo $GOOGLE_APPLICATION_CREDENTIALS
 
+      - name: cat $GOOGLE_APPLICATION_CREDENTIALS
+        run: cat $GOOGLE_APPLICATION_CREDENTIALS
+
       # - name: Login to Firebase
       #   run: firebase login:ci
 
