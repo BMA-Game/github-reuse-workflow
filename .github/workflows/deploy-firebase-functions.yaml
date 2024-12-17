@@ -12,9 +12,9 @@ on:
       function_name:
         required: true
         type: string
-    secrets:
-      GH_PAT:
+      google_application_credentials:
         required: true
+        type: string
 
 jobs:
   deploy:
@@ -49,17 +49,17 @@ jobs:
         name: GCP Authentication
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ inputs.workload_identity_provider }}
           service_account: ${{ inputs.service_account }}
+          credentials_json: ${{ inputs.google_application_credentials }}
           create_credentials_file: true
           export_environment_variables: true
           access_token_lifetime: 60s
 
-      - name: echo $GOOGLE_APPLICATION_CREDENTIALS
-        run: echo $GOOGLE_APPLICATION_CREDENTIALS
+      # - name: echo $GOOGLE_APPLICATION_CREDENTIALS
+      #   run: echo $GOOGLE_APPLICATION_CREDENTIALS
 
-      - name: cat $GOOGLE_APPLICATION_CREDENTIALS
-        run: cat $GOOGLE_APPLICATION_CREDENTIALS
+      # - name: cat $GOOGLE_APPLICATION_CREDENTIALS
+      #   run: cat $GOOGLE_APPLICATION_CREDENTIALS
 
       # - name: Login to Firebase
       #   run: firebase login:ci
