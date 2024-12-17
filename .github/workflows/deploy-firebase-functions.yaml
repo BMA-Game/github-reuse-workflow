@@ -56,8 +56,8 @@ jobs:
           export_environment_variables: true
           # access_token_lifetime: 60s
 
-      - name: Verify Auth
-        run: gcloud iam service-accounts get-iam-policy ${{ inputs.service_account }}
+      # - name: Verify Auth
+      #   run: gcloud iam service-accounts get-iam-policy ${{ inputs.service_account }}
 
       # - name: cat $GOOGLE_APPLICATION_CREDENTIALS
       #   run: cat $GOOGLE_APPLICATION_CREDENTIALS
