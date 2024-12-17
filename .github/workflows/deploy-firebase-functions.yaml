@@ -53,6 +53,10 @@ jobs:
           service_account: ${{ inputs.service_account }}
           create_credentials_file: true
           export_environment_variables: true
+          access_token_lifetime: 60s
+
+      - name: echo $GOOGLE_APPLICATION_CREDENTIALS
+        run: echo $GOOGLE_APPLICATION_CREDENTIALS
 
       # - name: Login to Firebase
       #   run: firebase login:ci
