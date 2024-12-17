@@ -55,8 +55,8 @@ jobs:
           export_environment_variables: true
           access_token_lifetime: 60s
 
-      # - name: echo $GOOGLE_APPLICATION_CREDENTIALS
-      #   run: echo $GOOGLE_APPLICATION_CREDENTIALS
+      - name: Verify Auth
+        run: gcloud projects list
 
       # - name: cat $GOOGLE_APPLICATION_CREDENTIALS
       #   run: cat $GOOGLE_APPLICATION_CREDENTIALS
