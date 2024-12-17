@@ -57,8 +57,8 @@ jobs:
       # - name: Login to Firebase
       #   run: firebase login:ci
 
-      - name: Verify Firebase Auth
-        run: firebase projects:list
+      # - name: Verify Firebase Auth
+      #   run: firebase projects:list
 
       - id: deploy
         run: firebase deploy --only functions
