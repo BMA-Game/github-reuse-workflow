@@ -26,7 +26,6 @@ on:
         required: true
         type: string
       role-duration-seconds:
-        required: true
         type: number
         default: 1200
     secrets:
@@ -80,8 +79,9 @@ jobs:
 
       - name: Install SOPS
         run: |
-          sudo apt-get update
-          sudo apt-get install -y sops
+          curl -LO https://github.com/getsops/sops/releases/download/v3.9.2/sops-v3.9.2.linux.amd64
+          mv sops-v3.9.2.linux.amd64 /usr/local/bin/sops
+          chmod +x /usr/local/bin/sops
           
       - name: Sops Decrypt
         run: sops -d functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
