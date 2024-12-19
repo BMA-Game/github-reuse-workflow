@@ -30,8 +30,7 @@ on:
         type: number
         default: 1200
     secrets:
-      GOOGLE_APPLICATION_CREDENTIALS:
-        required: true
+      GH_PAT:
 
 jobs:
   deploy:
