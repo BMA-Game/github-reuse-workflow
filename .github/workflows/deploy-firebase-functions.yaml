@@ -84,7 +84,7 @@ jobs:
           sudo apt-get install -y sops
           
       - name: Sops Decrypt
-        run: sops -d secrets/${{ inputs.env }}.secrets.enc > .env
+        run: sops -d functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
 
       - id: Deploy
         run: firebase deploy --only functions
