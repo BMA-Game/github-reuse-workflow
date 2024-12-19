@@ -61,7 +61,7 @@ jobs:
       - name: Install Firebase CLI
         run: pnpm install -g firebase-tools
 
-      - id: auth-gcp
+      - id: authen-gcp
         name: GCP Authentication
         uses: google-github-actions/auth@v2
         with:
