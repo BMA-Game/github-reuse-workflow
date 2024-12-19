@@ -3,6 +3,9 @@ name: Deploy Firebase Functions
 on:
   workflow_call:
     inputs:
+      env:
+        required: true
+        type: string
       workload_identity_provider:
         required: true
         type: string
@@ -12,6 +15,20 @@ on:
       function_name:
         required: true
         type: string
+      aws-region:
+        required: true
+        type: string
+        default: ap-southeast-1
+      role-to-assume:
+        required: true
+        type: string
+      role-session-name:
+        required: true
+        type: string
+      role-duration-seconds:
+        required: true
+        type: number
+        default: 1200
     secrets:
       GOOGLE_APPLICATION_CREDENTIALS:
         required: true
@@ -45,7 +62,7 @@ jobs:
       - name: Install Firebase CLI
         run: pnpm install -g firebase-tools
 
-      - id: auth
+      - id: auth-gcp
         name: GCP Authentication
         uses: google-github-actions/auth@v2
         with:
@@ -54,5 +71,22 @@ jobs:
           create_credentials_file: true
           export_environment_variables: true
 
-      - id: deploy
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+
+      - name: Install SOPS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sops
+          
+      - name: Sops Decrypt
+        run: sops -d secrets/${{ inputs.env }}.secrets.enc > .env
+
+      - id: Deploy
         run: firebase deploy --only functions
+
