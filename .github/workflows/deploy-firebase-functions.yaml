@@ -34,8 +34,8 @@ on:
 jobs:
   deploy:
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: "read"
+      id-token: "write"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -82,10 +82,9 @@ jobs:
           curl -LO https://github.com/getsops/sops/releases/download/v3.9.2/sops-v3.9.2.linux.amd64
           mv sops-v3.9.2.linux.amd64 /usr/local/bin/sops
           chmod +x /usr/local/bin/sops
-          
+
       - name: Sops Decrypt
         run: sops -d functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
 
       - id: Deploy
-        run: firebase deploy --only functions
-
+        run: firebase deploy --only functions -P ${{ inputs.env }}
