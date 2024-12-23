@@ -86,5 +86,8 @@ jobs:
       - name: Sops Decrypt
         run: sops -d functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
 
+      - name: use Project
+        run: firebase use ${{ inputs.env }}
+
       - id: Deploy
         run: firebase deploy --only functions -P ${{ inputs.env }}
