@@ -6,13 +6,10 @@ on:
       env:
         required: true
         type: string
-      workload_identity_provider:
+      workload-identity-provider:
         required: true
         type: string
-      service_account:
-        required: true
-        type: string
-      function_name:
+      service-account:
         required: true
         type: string
       aws-region:
@@ -83,8 +80,8 @@ jobs:
         name: GCP Authentication
         uses: google-github-actions/auth@v2
         with:
-          service_account: ${{ inputs.service_account }}
-          workload_identity_provider: ${{ inputs.workload_identity_provider }}
+          service_account: ${{ inputs.service-account }}
+          workload_identity_provider: ${{ inputs.workload-identity-provider }}
           create_credentials_file: true
           export_environment_variables: true
 
