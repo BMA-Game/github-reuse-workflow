@@ -12,7 +12,7 @@ jobs:
     runs-on: 4-core-arm64-GitHub-hosted-runners
     defaults:
       run:
-        working-directory: ${{ inputs.directory-path }}
+        working-directory: ${{ inputs.directory-path || './' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
