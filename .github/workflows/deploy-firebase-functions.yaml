@@ -44,17 +44,18 @@ jobs:
           submodules: true
           token: ${{ secrets.GH_PAT || github.token }}
 
+      - uses: pnpm/action-setup@v4
+        name: prepare pnpm
+        id: prepare-install
+        with:
+          version: 9
+          run_install: false
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
 
-      - uses: pnpm/action-setup@v4
-        name: Install pnpm
-        id: pnpm-install
-        with:
-          version: 9
-          run_install: |
-            args: [--frozen-lockfile]
-            cwd: ./functions
+      - name: Install pnpm
+        run: cd ./functions && pnpm install
 
       - name: Get pnpm store directory
         id: pnpm-cache
