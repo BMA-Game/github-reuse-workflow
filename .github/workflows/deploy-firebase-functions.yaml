@@ -58,7 +58,7 @@ jobs:
             - recursive: true
 
       - name: Install Firebase CLI
-        run: pnpm install -g firebase-tools
+        run: pnpm install -g firebase-tools is-ci
 
       - id: authen-gcp
         name: GCP Authentication
