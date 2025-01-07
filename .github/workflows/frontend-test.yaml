@@ -18,9 +18,10 @@ jobs:
           run_install: false
 
       - uses: actions/setup-node@v4
+        name: Install Node.js
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: 22
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
