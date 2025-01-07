@@ -45,22 +45,22 @@ jobs:
           token: ${{ secrets.GH_PAT || github.token }}
 
       - uses: pnpm/action-setup@v4
-        name: Setup pnpm
+        name: Install pnpm
         id: setup-pnpm
         with:
           version: 9
           run_install: false
 
-      - name: Set up Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
           cache: "pnpm"
           cache-dependency-path: functions/pnpm-lock.yaml
 
       - name: Install firebase-tools
-        run: pnpm install -g firebase-tools
+        run: pnpm install -g firebase-tools is-ci
 
-      - name: Install npm package
+      - name: Install dependencies
         run: cd ./functions && pnpm install --frozen-lockfile
 
       - name: Get pnpm store directory
