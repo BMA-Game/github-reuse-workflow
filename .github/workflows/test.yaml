@@ -2,6 +2,10 @@ name: Test
 
 on:
   workflow_call:
+    inputs:
+      directory-path:
+        required: false
+        type: string
 
 jobs:
   test:
@@ -18,12 +22,19 @@ jobs:
           run_install: false
 
       - uses: actions/setup-node@v4
+        name: Install Node.js
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: 22
+          cache: "pnpm"
+          cache-dependency-path: ${{ inputs.directory-path && format('{0}/pnpm-lock.yaml', inputs.directory-path) || '' }}
 
       - name: Install dependencies
+        if: inputs.directory-path == null
         run: pnpm i --frozen-lockfile
+
+      - name: Install dependencies
+        if: inputs.directory-path
+        run: cd ${{inputs.directory-path}} && pnpm i --frozen-lockfile
 
       - name: Get pnpm store directory
         id: pnpm-cache
