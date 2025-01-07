@@ -10,6 +10,9 @@ on:
 jobs:
   test:
     runs-on: 4-core-arm64-GitHub-hosted-runners
+    defaults:
+      run:
+        working-directory: ${{ inputs.directory-path }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,12 +32,7 @@ jobs:
           cache-dependency-path: ${{ inputs.directory-path && format('{0}/pnpm-lock.yaml', inputs.directory-path) || '' }}
 
       - name: Install dependencies
-        if: inputs.directory-path == null
         run: pnpm i --frozen-lockfile
-
-      - name: Install dependencies
-        if: inputs.directory-path
-        run: cd ${{inputs.directory-path}} && pnpm i --frozen-lockfile
 
       - name: Get pnpm store directory
         id: pnpm-cache

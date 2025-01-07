@@ -62,7 +62,8 @@ jobs:
         run: pnpm install -g firebase-tools is-ci
 
       - name: Install dependencies
-        run: cd ./functions && pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
+        working-directory: ./functions
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -102,7 +103,8 @@ jobs:
           chmod +x /usr/local/bin/sops
 
       - name: Sops Decrypt
-        run: sops -d ./functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
+        run: sops -d ./secrets/${{ inputs.env }}.secrets.enc > .env
+        working-directory: ./functions
 
       - name: use Project
         run: firebase use ${{ inputs.env }}
