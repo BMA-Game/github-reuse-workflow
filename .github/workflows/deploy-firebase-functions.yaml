@@ -45,8 +45,8 @@ jobs:
           token: ${{ secrets.GH_PAT || github.token }}
 
       - uses: pnpm/action-setup@v4
-        name: prepare pnpm
-        id: prepare-install
+        name: Setup pnpm
+        id: setup-pnpm
         with:
           version: 9
           run_install: false
@@ -56,8 +56,11 @@ jobs:
         with:
           cache: "pnpm"
 
-      - name: Install pnpm
-        run: cd ./functions && pnpm install
+      - name: Install firebase-tools
+        run: pnpm install -g firebase-tools
+
+      - name: Install npm package
+        run: cd ./functions && pnpm install --frozen-lockfile
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -72,9 +75,6 @@ jobs:
           key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
-
-      - name: Install Firebase CLI
-        run: pnpm install -g firebase-tools is-ci
 
       - id: authen-gcp
         name: GCP Authentication
@@ -100,7 +100,7 @@ jobs:
           chmod +x /usr/local/bin/sops
 
       - name: Sops Decrypt
-        run: sops -d functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
+        run: sops -d ./functions/secrets/${{ inputs.env }}.secrets.enc > functions/.env
 
       - name: use Project
         run: firebase use ${{ inputs.env }}
