@@ -25,6 +25,12 @@ on:
       role-duration-seconds:
         type: number
         default: 1200
+      gcp-project:
+        required: true
+        type: string
+      gcp-region:
+        required: true
+        type: string
     secrets:
       GH_PAT:
 
@@ -76,7 +82,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - id: authen-gcp
+      - id: auth-gcp
         name: GCP Authentication
         uses: google-github-actions/auth@v2
         with:
@@ -84,6 +90,11 @@ jobs:
           workload_identity_provider: ${{ inputs.workload-identity-provider }}
           create_credentials_file: true
           export_environment_variables: true
+
+      - name: "Set up Cloud SDK"
+        uses: "google-github-actions/setup-gcloud@v2"
+        with:
+          version: ">= 363.0.0"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -112,25 +123,28 @@ jobs:
       - name: Install jq
         run: sudo apt-get install -y jq
 
+      # gcloud functions list --project dev-alphabet --regions asia-southeast1 --format json // projects/dev-alphabet/locations/asia-southeast1/functions/updateGames
+      # gcloud functions describe updateGames --region asia-southeast1 --format json
+
       - name: Verify Cloud Functions
         run: |
           # Wait for a short period to allow for service propagation
           sleep 30
 
           # List all Firebase Functions and check their status
-          FUNCTIONS=$(firebase functions:list --project ${{ inputs.env }} --json | jq -r '.[] | .name')
+          FUNCTIONS=$(gcloud functions list --project ${{ inputs.gcp-project }} --regions ${{ inputs.gcp-region }} --format "value(name)")
 
           for FUNCTION in $FUNCTIONS; do
             echo "Checking function: $FUNCTION"
             
             # Get function status using Firebase CLI
-            STATUS=$(firebase functions:list --project ${{ inputs.env }} --json | jq -r ".[] | select(.name==\"$FUNCTION\") | .status")
-            
-            if [ "$STATUS" = "ACTIVE" ]; then
+            STATE=$(gcloud functions describe $FUNCTION --region ${{ inputs.gcp-region }} --format "value(state)")
+
+            if [ "$STATE" = "ACTIVE" ]; then
               echo "✅ Function $FUNCTION is running successfully"
             else
               echo "❌ Function $FUNCTION failed to start properly"
-              echo "Status: $STATUS"
+              echo "State: $STATUS"
               exit 1
             fi
           done
