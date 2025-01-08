@@ -120,12 +120,6 @@ jobs:
       - id: Deploy
         run: firebase deploy --only functions -P ${{ inputs.env }}
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
-
-      # gcloud functions list --project dev-alphabet --regions asia-southeast1 --format json // projects/dev-alphabet/locations/asia-southeast1/functions/updateGames
-      # gcloud functions describe updateGames --region asia-southeast1 --format json
-
       - name: Verify Cloud Functions
         run: |
           # Wait for a short period to allow for service propagation
