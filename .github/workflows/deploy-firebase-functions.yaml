@@ -108,3 +108,30 @@ jobs:
 
       - id: Deploy
         run: firebase deploy --only functions -P ${{ inputs.env }}
+
+      - name: Verify Cloud Functions
+        uses: sergeysova/jq-action@v2
+        with:
+          cmd: |
+            # Wait for a short period to allow for service propagation
+            sleep 30
+
+            # List all Firebase Functions and check their status
+            FUNCTIONS=$(firebase functions:list --project ${{ inputs.env }} --json | jq -r '.[] | .name')
+
+            for FUNCTION in $FUNCTIONS; do
+              echo "Checking function: $FUNCTION"
+              
+              # Get function status using Firebase CLI
+              STATUS=$(firebase functions:list --project ${{ inputs.env }} --json | jq -r ".[] | select(.name==\"$FUNCTION\") | .status")
+              
+              if [ "$STATUS" = "ACTIVE" ]; then
+                echo "✅ Function $FUNCTION is running successfully"
+              else
+                echo "❌ Function $FUNCTION failed to start properly"
+                echo "Status: $STATUS"
+                exit 1
+              fi
+            done
+
+            echo "All Firebase Functions verified successfully!"
