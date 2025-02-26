@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       tag:
-        required: true
+        required: false
         type: string
         default: ${{ github.ref_name }}
       pull-platforms: 
