@@ -1,0 +1,81 @@
+name: Sync to R2 Bucket
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        description: "The local directory to sync from"
+        required: true
+        default: "dev"
+        type: string
+      bucket-name:
+        description: "The name of the R2 bucket"
+        required: true
+        type: string
+      r2-account-id:
+        description: "Your Cloudflare R2 Account ID"
+        required: true
+        type: string
+      dry-run:
+        description: "Run sync in dry-run mode (no actual upload/delete)"
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      R2_ACCESS_KEY_ID:
+        description: "Your R2 Access Key ID"
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        description: "Your R2 Secret Access Key"
+        required: true
+
+jobs:
+  sync-to-r2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check if directory exists
+        run: |
+          if [ ! -d "${{ inputs.directory }}" ]; then
+            echo "❌ Error: Directory '${{ inputs.directory }}' does not exist."
+            exit 1
+          fi
+          echo "✅ Directory exists: ${{ inputs.directory }}"
+
+      - name: Install r2cli
+        run: |
+          echo "📥 Installing r2cli..."
+          curl -L https://github.com/cloudflare/r2-cli/releases/latest/download/r2-linux-amd64.tar.gz | tar xz
+          sudo mv r2 /usr/local/bin/
+          chmod +x /usr/local/bin/r2
+          r2 --version
+
+      - name: Sync files to R2 Bucket
+        env:
+          R2_ACCOUNT_ID: ${{ inputs.r2-account-id }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+
+          # Build sync command
+          CMD=("r2" "sync" "${{ inputs.directory }}" "s3://${{ inputs.bucket-name }}")
+          ENDPOINT_URL="https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com"
+
+          # Add flags based on input
+          if [[ "${{ inputs.dry-run }}" == "true" ]]; then
+            echo "🔍 Dry-run mode enabled: No files will be uploaded or deleted."
+            CMD+=("--dry-run")
+          else
+            echo "🚀 Syncing with deletion enabled (--delete)"
+            CMD+=("--delete")
+          fi
+
+          CMD+=("--endpoint-url" "$ENDPOINT_URL")
+
+          echo "🔁 Running: ${CMD[*]}"
+          "${CMD[@]}"
+
+          echo "✅ Sync completed successfully!"
