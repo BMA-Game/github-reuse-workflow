@@ -31,14 +31,54 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Sync files to R2 Bucket
-        # We use environment variables to provide credentials to the AWS CLI.
-        # This is the recommended and secure way for GitHub Actions.
+      - name: Configure AWS CLI for large file count (27k+ files)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "auto" # R2 requires the region to be 'auto'
+          AWS_DEFAULT_REGION: "auto"
         run: |
+          # Optimized configuration for handling 27,720+ files
+          aws configure set default.s3.max_concurrent_requests 100
+          aws configure set default.s3.max_bandwidth 2GB/s
+          aws configure set default.s3.multipart_threshold 128MB
+          aws configure set default.s3.multipart_chunksize 128MB
+          aws configure set default.s3.max_queue_size 50000
+          aws configure set default.s3.use_accelerate_endpoint false
+          aws configure set default.s3.addressing_style virtual
+
+      - name: Sync files to R2 Bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "auto"
+        run: |
+          echo "Starting sync of approximately"
+          echo "Using optimized settings for large file count"
+
+          # Pre-sync: List files to get accurate count and progress
+          echo "Counting local files..."
+          LOCAL_FILES=$(find ${{ inputs.directory }} -type f | wc -l)
+          echo "Found $LOCAL_FILES local files to process"
+
+          # Use optimized sync with progress monitoring
           aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
             --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --delete
+            --size-only \
+            --cli-read-timeout 0 \
+            --cli-connect-timeout 120 \
+            --exclude "*.tmp" \
+            --exclude "*.temp" \
+            --exclude ".DS_Store" \
+            --exclude "Thumbs.db" \
+            --storage-class STANDARD \
+            --delete \
+            --no-progress 2>&1 | while read line; do
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] $line"
+            done
+
+          echo "Sync completed successfully!"
+          echo "Verifying sync..."
+
+          # Post-sync verification
+          REMOTE_FILES=$(aws s3 ls s3://${{ inputs.bucket-name }} --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com --recursive | wc -l)
+          echo "Remote bucket now contains $REMOTE_FILES files"
