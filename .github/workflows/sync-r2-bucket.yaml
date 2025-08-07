@@ -31,21 +31,37 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install and configure AWS CLI
+      - name: Install and configure rclone
         run: |
-          # AWS CLI should be pre-installed on ubuntu-latest, but let's ensure it's configured properly
-          aws --version
+          # Install rclone
+          curl https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      - name: Configure rclone for R2
+        env:
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          # Create rclone config for R2
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf << EOF
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${R2_ACCESS_KEY_ID}
+          secret_access_key = ${R2_SECRET_ACCESS_KEY}
+          endpoint = https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com
+          EOF
 
       - name: Sync files to R2 Bucket
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "auto" # R2 requires the region to be 'auto'
         run: |
-          echo "Starting sync from ${{ inputs.directory }}/ to s3://${{ inputs.bucket-name }}"
-          aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
-            --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --delete \
-            --cache-control "public, max-age=31536000" \
-            --metadata-directive REPLACE
+          echo "Starting sync from ${{ inputs.directory }}/ to r2:${{ inputs.bucket-name }}"
+          rclone sync ${{ inputs.directory }}/ r2:${{ inputs.bucket-name }} \
+            --progress \
+            --delete-after \
+            --header-upload "Cache-Control: public, max-age=31536000" \
+            --s3-upload-cutoff 200M \
+            --s3-chunk-size 100M \
+            --transfers 10 \
+            --checkers 20
           echo "Sync completed successfully"
