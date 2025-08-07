@@ -30,11 +30,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - uses: ryand56/r2-upload-action@latest
-        with:
-          r2-account-id: ${{ inputs.r2-account-id }}
-          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          r2-bucket: ${{ inputs.bucket-name }}
-          source-dir: ${{ inputs.directory }}
-          destination-dir: ./
+      - name: Install AWS CLI
+        run: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip  " -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
+      - name: Sync files to R2 Bucket
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "auto" # R2 requires the region to be 'auto'
+        run: |
+          aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
+            --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
+            --delete
