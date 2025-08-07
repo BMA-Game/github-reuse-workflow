@@ -1,4 +1,4 @@
-name: Sync to R2 Bucket (Fixed for Images)
+name: Sync to R2 Bucket
 
 on:
   workflow_call:
@@ -31,111 +31,137 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS CLI for large file count with image optimization
+      - name: Configure AWS CLI for large file count
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "auto"
         run: |
-          # Optimized configuration for handling large files and images
+          # Optimized configuration for handling
           aws configure set default.s3.max_concurrent_requests 50
           aws configure set default.s3.max_bandwidth 1GB/s
-          aws configure set default.s3.multipart_threshold 64MB
-          aws configure set default.s3.multipart_chunksize 64MB
+          aws configure set default.s3.multipart_threshold 128MB
+          aws configure set default.s3.multipart_chunksize 128MB
           aws configure set default.s3.max_queue_size 10000
           aws configure set default.s3.use_accelerate_endpoint false
           aws configure set default.s3.addressing_style virtual
 
-      - name: Sync files to R2 Bucket with proper image handling
+      - name: Sync files to R2 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "auto"
         run: |
-          echo "Starting sync with image-optimized settings"
+          echo "Starting sync of approximately"
+          echo "Using optimized settings for large file count"
+
+          # Pre-sync: List files to get accurate count and progress
           echo "Counting local files..."
           LOCAL_FILES=$(find ${{ inputs.directory }} -type f | wc -l)
           echo "Found $LOCAL_FILES local files to process"
 
-          # First sync: Images with proper content types
-          echo "Syncing image files with metadata..."
+          # Main sync - force update all files to ensure no corruption
           aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
             --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --checksum \
             --cli-read-timeout 0 \
             --cli-connect-timeout 120 \
-            --include "*.jpg" --include "*.jpeg" --include "*.png" --include "*.gif" --include "*.webp" --include "*.svg" \
-            --content-type-by-extension \
-            --metadata-directive REPLACE \
-            --cache-control "public, max-age=31536000" \
-            --storage-class STANDARD \
-            --no-progress 2>&1 | while read line; do
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] [IMAGES] $line"
-            done
-
-          # Second sync: All other files
-          echo "Syncing remaining files..."
-          aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
-            --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --checksum \
-            --cli-read-timeout 0 \
-            --cli-connect-timeout 120 \
-            --exclude "*.jpg" --exclude "*.jpeg" --exclude "*.png" --exclude "*.gif" --exclude "*.webp" --exclude "*.svg" \
             --exclude "*.tmp" \
             --exclude "*.temp" \
             --exclude ".DS_Store" \
             --exclude "Thumbs.db" \
-            --content-type-by-extension \
             --storage-class STANDARD \
             --delete \
             --no-progress 2>&1 | while read line; do
-              echo "[$(date '+%Y-%m-%d %H:%M:%S')] [OTHER] $line"
+              echo "[$(date '+%Y-%m-%d %H:%M:%S')] $line"
             done
 
-          echo "Sync completed successfully!"
+          echo "Main sync completed!"
 
-      - name: Verify and fix corrupted images
+      - name: Fix image content-types and verify integrity
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "auto"
         run: |
-          echo "Verifying image files..."
+          echo "Fixing content-types for image files..."
 
-          # List all image files in bucket
+          # Get list of image files from bucket
           aws s3 ls s3://${{ inputs.bucket-name }} \
             --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --recursive | grep -E '\.(jpg|jpeg|png|gif|webp|svg)$' > image_list.txt
+            --recursive | grep -iE '\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff|ico)$' > image_files.txt
 
-          # Check if any images are 0 bytes
-          echo "Checking for zero-byte images..."
-          awk '$3 == 0 {print $4}' image_list.txt > zero_byte_images.txt
+          echo "Found $(wc -l < image_files.txt) image files"
 
-          if [ -s zero_byte_images.txt ]; then
-            echo "Found zero-byte images:"
-            cat zero_byte_images.txt
-            
-            # Re-upload zero-byte images
-            while IFS= read -r image_path; do
-              local_path="${{ inputs.directory }}/${image_path}"
-              if [ -f "$local_path" ] && [ -s "$local_path" ]; then
-                echo "Re-uploading: $image_path"
-                aws s3 cp "$local_path" "s3://${{ inputs.bucket-name }}/$image_path" \
-                  --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-                  --content-type-by-extension \
-                  --cache-control "public, max-age=31536000"
+          # Process each image file
+          while IFS= read -r line; do
+            if [ -n "$line" ]; then
+              # Extract file path (4th column) and size (3rd column)
+              file_path=$(echo "$line" | awk '{print $4}')
+              file_size=$(echo "$line" | awk '{print $3}')
+              
+              if [ "$file_size" = "0" ]; then
+                echo "WARNING: Zero-byte file detected: $file_path"
+                # Try to re-upload from local
+                local_file="${{ inputs.directory }}/$file_path"
+                if [ -f "$local_file" ] && [ -s "$local_file" ]; then
+                  echo "Re-uploading: $file_path"
+                  aws s3 cp "$local_file" "s3://${{ inputs.bucket-name }}/$file_path" \
+                    --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com
+                fi
               fi
-            done < zero_byte_images.txt
+              
+              # Set proper content-type based on extension
+              extension=$(echo "$file_path" | awk -F. '{print tolower($NF)}')
+              case $extension in
+                jpg|jpeg) content_type="image/jpeg" ;;
+                png) content_type="image/png" ;;
+                gif) content_type="image/gif" ;;
+                webp) content_type="image/webp" ;;
+                svg) content_type="image/svg+xml" ;;
+                bmp) content_type="image/bmp" ;;
+                tiff|tif) content_type="image/tiff" ;;
+                ico) content_type="image/x-icon" ;;
+                *) content_type="application/octet-stream" ;;
+              esac
+              
+              # Update metadata for the file
+              echo "Setting content-type $content_type for $file_path"
+              aws s3 cp "s3://${{ inputs.bucket-name }}/$file_path" "s3://${{ inputs.bucket-name }}/$file_path" \
+                --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
+                --content-type "$content_type" \
+                --cache-control "public, max-age=31536000" \
+                --metadata-directive REPLACE \
+                --quiet || echo "Failed to update metadata for $file_path"
+            fi
+          done < image_files.txt
+
+          echo "Image content-type fix completed!"
+
+      - name: Final verification
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "auto"
+        run: |
+          echo "Final verification..."
+
+          # Count files
+          REMOTE_FILES=$(aws s3 ls s3://${{ inputs.bucket-name }} --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com --recursive | wc -l)
+          echo "Remote bucket contains $REMOTE_FILES files"
+
+          # Check for zero-byte files
+          ZERO_BYTE_FILES=$(aws s3 ls s3://${{ inputs.bucket-name }} --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com --recursive | awk '$3 == 0 {count++} END {print count+0}')
+          echo "Zero-byte files: $ZERO_BYTE_FILES"
+
+          # Summary
+          echo "Sync Summary:"
+          echo "- Total files in bucket: $REMOTE_FILES"
+          echo "- Zero-byte files: $ZERO_BYTE_FILES"
+          echo "- Sync completed at: $(date)"
+
+          if [ "$ZERO_BYTE_FILES" -gt 0 ]; then
+            echo "WARNING: There are still zero-byte files. Check the logs above."
+            exit 1
           else
-            echo "No zero-byte images found"
+            echo "SUCCESS: All files appear to be properly synced!"
           fi
-
-          # Final verification
-          TOTAL_IMAGES=$(wc -l < image_list.txt)
-          ZERO_BYTE_COUNT=$(wc -l < zero_byte_images.txt)
-          VALID_IMAGES=$((TOTAL_IMAGES - ZERO_BYTE_COUNT))
-
-          echo "Image verification complete:"
-          echo "- Total images: $TOTAL_IMAGES"
-          echo "- Zero-byte images: $ZERO_BYTE_COUNT"
-          echo "- Valid images: $VALID_IMAGES"
