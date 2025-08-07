@@ -30,18 +30,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: ryand56/r2-upload-action@latest
         with:
-          aws-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          aws-region: auto
-          role-duration-seconds: 1200
-          role-session-name: sync-r2-bucket
-
-      - name: Sync files to R2 Bucket
-        run: |
-          aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
-            --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --delete
+          r2-account-id: ${{ inputs.r2-account-id }}
+          r2-access-key-id: ${{ secrets.R2_ACCESS_KEY_ID }}
+          r2-secret-access-key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          r2-bucket: ${{ inputs.bucket-name }}
+          source-dir: ${{ inputs.directory }}
+          destination-dir: ./
