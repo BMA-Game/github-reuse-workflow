@@ -30,8 +30,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Check AWS CLI version
-        run: aws --version
+      - name: Install Git LFS
+        run: |
+          sudo apt-get install git-lfs
+          git lfs install
+      - name: Pull LFS files
+        run: git lfs pull
       - name: Sync files to R2 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
