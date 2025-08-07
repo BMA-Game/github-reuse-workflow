@@ -31,12 +31,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Install and configure AWS CLI
+        run: |
+          # AWS CLI should be pre-installed on ubuntu-latest, but let's ensure it's configured properly
+          aws --version
+
       - name: Sync files to R2 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "auto" # R2 requires the region to be 'auto'
         run: |
+          echo "Starting sync from ${{ inputs.directory }}/ to s3://${{ inputs.bucket-name }}"
           aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
             --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --delete
+            --delete \
+            --cache-control "public, max-age=31536000" \
+            --metadata-directive REPLACE \
+            --content-type-by-extension
+          echo "Sync completed successfully"
