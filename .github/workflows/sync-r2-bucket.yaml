@@ -31,36 +31,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Upload files to R2 with correct content-type
+      - name: Sync files to R2 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "auto"
+          AWS_DEFAULT_REGION: "auto" # R2 requires the region to be 'auto'
         run: |
-          echo "🔄 Scanning and uploading files from '${{ inputs.directory }}' to bucket '${{ inputs.bucket-name }}'"
-
-          find ${{ inputs.directory }} -type f | while read file; do
-            rel_path="${file#${{ inputs.directory }}/}"
-            extension="${file##*.}"
-            extension=$(echo "$extension" | tr '[:upper:]' '[:lower:]')
-
-            case "$extension" in
-              jpg|jpeg) content_type="image/jpeg" ;;
-              png) content_type="image/png" ;;
-              gif) content_type="image/gif" ;;
-              webp) content_type="image/webp" ;;
-              svg) content_type="image/svg+xml" ;;
-              *) content_type="application/octet-stream" ;;
-            esac
-
-            echo "📤 Uploading $rel_path (type: $content_type)"
-
-            aws s3 cp "$file" "s3://${{ inputs.bucket-name }}/$rel_path" \
-              --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
-              --content-type "$content_type" \
-              --cache-control "no-cache, must-revalidate" \
-              --metadata "uploaded=$(date +%s)" \
-              --quiet || echo "❌ Upload failed: $file"
-          done
-
-          echo "✅ Sync to R2 completed."
+          aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
+            --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
+            --delete
