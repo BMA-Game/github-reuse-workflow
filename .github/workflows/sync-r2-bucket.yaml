@@ -33,6 +33,9 @@ jobs:
         with:
           lfs: true
           fetch-depth: 1
+      - name: Configure AWS CLI
+        run: |
+          aws configure set default.s3.max_concurrent_requests 100
       - name: Sync files to R2 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -41,4 +44,7 @@ jobs:
         run: |
           aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
             --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --delete
+            --delete \
+            --exclude "*.log" \
+            --exclude "*.tmp" \
+            --exclude ".DS_Store"
