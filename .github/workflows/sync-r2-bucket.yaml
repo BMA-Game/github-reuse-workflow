@@ -26,16 +26,12 @@ on:
 
 jobs:
   sync-to-r2:
-    runs-on: ubuntu-latest
+    runs-on: 4-core-arm64-GitHub-hosted-runners
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Install Git LFS
-        run: |
-          sudo apt-get install git-lfs
-          git lfs install
-      - name: Pull LFS files
-        run: git lfs pull
+        with:
+          lfs: true
       - name: Sync files to R2 Bucket
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
