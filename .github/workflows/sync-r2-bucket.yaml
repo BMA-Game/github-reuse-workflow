@@ -25,43 +25,54 @@ on:
 jobs:
   discover-subdirectories:
     runs-on: 4-core-arm64-GitHub-hosted-runners
+    outputs:
+      subdirs: ${{ steps.find.outputs.subdirs }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Find subdirectories
+        id: find
+        shell: bash
         run: |
+          set -euo pipefail
           cd "${{ inputs.directory }}"
 
-          # Find all subdirectories
-          subdirs=$(find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name ".github" ! -name ".*" | sed 's|^\./||' | sort)
+          # Find top-level subdirectories (exclude dot dirs)
+          mapfile -t subdirs < <(find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name ".github" ! -name ".*" \
+            | sed 's|^\./||' | sort)
 
-          # Check if there are files in the root
-          root_files=$(find . -maxdepth 1 -type f ! -name ".*" | wc -l)
-          has_root_files="false"
-          if [ "$root_files" -gt 0 ]; then
-            has_root_files="true"
+          # Root files?
+          root_files_count=$(find . -maxdepth 1 -type f ! -name ".*" | wc -l | tr -d '[:space:]')
+          has_root_files=false
+          if [ "$root_files_count" -gt 0 ]; then
+            has_root_files=true
           fi
 
-          # Convert to JSON array for matrix
-          if [ -n "$subdirs" ]; then
-            subdir_json=$(echo "$subdirs" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          # JSON for matrix
+          if [ "${#subdirs[@]}" -gt 0 ]; then
+            subdir_json=$(printf "%s\n" "${subdirs[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           else
             subdir_json="[]"
           fi
 
+          echo "has_root_files=${has_root_files}" >> "$GITHUB_OUTPUT"
+          echo "subdirs=${subdir_json}" >> "$GITHUB_OUTPUT"
+
   sync-subdirectories:
     needs: [discover-subdirectories]
-    if: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs)[0] != null }}
+    if: ${{ needs.discover-subdirectories.outputs.subdirs != '' && needs.discover-subdirectories.outputs.subdirs != '[]' }}
     strategy:
       fail-fast: false
       max-parallel: 10
       matrix:
-        subdir: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs) }}
+        subdir: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs || '[]') }}
     uses: BMA-Game/github-reuse-workflow/.github/workflows/sync-r2-reusable.yaml@main
     with:
-      directory: ${{ matrix.subdir }}
-      bucket-name: ${{ needs.get-env.outputs.bucket_name }}
-      r2-account-id: ${{ needs.get-env.outputs.r2_account_id }}
+      # Compose the full path to pass to the reusable workflow
+      directory: ${{ format('{0}/{1}', inputs.directory, matrix.subdir) }}
+      bucket-name: ${{ inputs['bucket-name'] }}
+      r2-account-id: ${{ inputs['r2-account-id'] }}
     secrets:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
