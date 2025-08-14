@@ -18,27 +18,48 @@ on:
         type: string
     secrets:
       R2_ACCESS_KEY_ID:
-        description: "Your R2 Access Key ID"
         required: true
       R2_SECRET_ACCESS_KEY:
-        description: "Your R2 Secret Access Key"
         required: true
 
 jobs:
   sync-to-r2:
-    runs-on: 4-core-arm64-GitHub-hosted-runners
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout only target dir (sparse)
         uses: actions/checkout@v4
         with:
-          lfs: true
           fetch-depth: 1
-      - name: Sync files to R2 Bucket
+          sparse-checkout: |
+            ${{ inputs.directory }}
+          sparse-checkout-cone: true
+          lfs: false
+
+      - name: Pull only LFS inside target dir
+        run: |
+          git lfs install
+          git config filter.lfs.smudge "git-lfs smudge --skip -- %f"
+          git config filter.lfs.process "git-lfs filter-process --skip"
+          git lfs pull --include="${{ inputs.directory }}/**" --exclude=""
+
+      - name: Tune AWS CLI S3 transfer
+        run: |
+          aws configure set default.s3.max_concurrent_requests 64
+          aws configure set default.s3.multipart_threshold 16MB
+          aws configure set default.s3.multipart_chunksize 64MB
+          aws configure set default.retry_mode standard
+          aws configure set default.max_attempts 5
+
+      - name: Sync files to R2 Bucket (fast)
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "auto" # R2 requires the region to be 'auto'
+          AWS_DEFAULT_REGION: "auto"
         run: |
-          aws s3 sync ${{ inputs.directory }}/ s3://${{ inputs.bucket-name }} \
-            --endpoint-url https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com \
-            --delete
+          aws s3 sync "${{ inputs.directory }}/" "s3://${{ inputs.bucket-name }}/" \
+            --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
+            --size-only \
+            --no-progress \
+            --only-show-errors \
+            --delete \
+            --exclude ".git/*" --exclude ".github/*"
