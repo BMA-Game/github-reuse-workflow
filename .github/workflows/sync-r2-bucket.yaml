@@ -28,28 +28,39 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          lfs: true
-          fetch-depth: 1
-
-      - name: Tune AWS CLI S3 transfer
+      - name: Find subdirectories
         run: |
-          aws configure set default.s3.max_concurrent_requests 64
-          aws configure set default.s3.multipart_threshold 16MB
-          aws configure set default.s3.multipart_chunksize 64MB
-          aws configure set default.retry_mode standard
-          aws configure set default.max_attempts 5
+          cd "${{ inputs.directory }}"
 
-      - name: Sync files to R2 Bucket (fast)
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "auto"
-        run: |
-          aws s3 sync "${{ inputs.directory }}/" "s3://${{ inputs.bucket-name }}/" \
-            --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
-            --size-only \
-            --no-progress \
-            --only-show-errors \
-            --delete \
-            --exclude ".git/*" --exclude ".github/*"
+          # Find all subdirectories
+          subdirs=$(find . -maxdepth 1 -type d ! -name "." ! -name ".git" ! -name ".github" ! -name ".*" | sed 's|^\./||' | sort)
+
+          # Check if there are files in the root
+          root_files=$(find . -maxdepth 1 -type f ! -name ".*" | wc -l)
+          has_root_files="false"
+          if [ "$root_files" -gt 0 ]; then
+            has_root_files="true"
+          fi
+
+          # Convert to JSON array for matrix
+          if [ -n "$subdirs" ]; then
+            subdir_json=$(echo "$subdirs" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            subdir_json="[]"
+          fi
+
+  sync-subdirectories:
+    if: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs)[0] != null }}
+    strategy:
+      fail-fast: false
+      max-parallel: 10
+      matrix:
+        subdir: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs) }}
+    uses: BMA-Game/github-reuse-workflow/.github/workflows/sync-r2-reusable.yaml@main
+    with:
+      directory: ${{ matrix.folder }}
+      bucket-name: ${{ needs.get-env.outputs.bucket_name }}
+      r2-account-id: ${{ needs.get-env.outputs.r2_account_id }}
+    secrets:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}

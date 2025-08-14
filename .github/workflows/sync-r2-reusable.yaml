@@ -1,0 +1,51 @@
+name: Sync to R2 Bucket
+
+on:
+  workflow_call:
+    inputs:
+      directory:
+        description: "The local directory to sync from"
+        required: true
+        default: "dev"
+        type: string
+      bucket-name:
+        description: "The name of the R2 bucket"
+        required: true
+        type: string
+      r2-account-id:
+        description: "Your Cloudflare R2 Account ID"
+        required: true
+        type: string
+    secrets:
+      R2_ACCESS_KEY_ID:
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  sync-to-r2:
+    runs-on: 4-core-arm64-GitHub-hosted-runners
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 1
+
+      - name: Tune AWS CLI S3 transfer
+        run: |
+          aws configure set default.s3.max_concurrent_requests 64
+          aws configure set default.s3.multipart_threshold 16MB
+          aws configure set default.s3.multipart_chunksize 64MB
+          aws configure set default.retry_mode standard
+          aws configure set default.max_attempts 5
+
+      - name: Sync files to R2 Bucket (fast)
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: "auto"
+        run: |
+          aws s3 sync "${{ inputs.directory }}/" "s3://${{ inputs.bucket-name }}/" \
+            --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
+            --delete
