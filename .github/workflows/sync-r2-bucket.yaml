@@ -24,9 +24,9 @@ on:
 
 jobs:
   sync-to-r2:
-    runs-on: ubuntu-latest
+    runs-on: 4-core-arm64-GitHub-hosted-runners
     steps:
-      - name: Checkout only target dir (sparse)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
