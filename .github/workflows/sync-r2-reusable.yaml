@@ -35,18 +35,11 @@ jobs:
         with:
           lfs: false
           fetch-depth: 1
-          sparse-checkout: ${{ inputs.directory }}
+          sparse-checkout: |
+            ${{ inputs.directory }}
           sparse-checkout-cone: true
         env:
           GIT_LFS_SKIP_SMUDGE: "1"
-
-      - name: Pull only LFS inside target dir
-        run: |
-          git lfs install
-          git config filter.lfs.smudge "git-lfs smudge --skip -- %f"
-          git config filter.lfs.process "git-lfs filter-process --skip"
-          git lfs pull --include="${{ inputs.directory }}/**" --exclude=""
-
       - name: Tune AWS CLI S3 transfer
         run: |
           aws configure set default.s3.max_concurrent_requests 64
