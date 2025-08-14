@@ -16,6 +16,10 @@ on:
         description: "Your Cloudflare R2 Account ID"
         required: true
         type: string
+      dest-prefix:
+        required: false
+        type: string
+        default: ""
     secrets:
       R2_ACCESS_KEY_ID:
         required: true
@@ -57,6 +61,11 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: "auto"
         run: |
-          aws s3 sync "${{ inputs.directory }}/" "s3://${{ inputs.bucket-name }}/" \
+          set -euo pipefail
+          dest="s3://${{ inputs.bucket-name }}/"
+          if [ -n "${{ inputs.dest-prefix }}" ]; then
+            dest="s3://${{ inputs.bucket-name }}/${{ inputs.dest-prefix }}/"
+          fi
+          aws s3 sync "${{ inputs.directory }}/" "$dest" \
             --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
-            --delete
+            --delete --no-progress
