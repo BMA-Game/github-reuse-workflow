@@ -64,7 +64,7 @@ jobs:
     if: ${{ needs.discover-subdirectories.outputs.subdirs != '' && needs.discover-subdirectories.outputs.subdirs != '[]' }}
     strategy:
       fail-fast: false
-      max-parallel: 20
+      max-parallel: 60
       matrix:
         subdir: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs || '[]') }}
     uses: BMA-Game/github-reuse-workflow/.github/workflows/sync-r2-reusable.yaml@main
