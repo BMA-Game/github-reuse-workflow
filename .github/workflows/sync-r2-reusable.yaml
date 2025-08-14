@@ -33,13 +33,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: false
+          lfs: true
           fetch-depth: 1
-          sparse-checkout: |
-            ${{ inputs.directory }}
-          sparse-checkout-cone: true
-        env:
-          GIT_LFS_SKIP_SMUDGE: "1"
       - name: Tune AWS CLI S3 transfer
         run: |
           aws configure set default.s3.max_concurrent_requests 64
