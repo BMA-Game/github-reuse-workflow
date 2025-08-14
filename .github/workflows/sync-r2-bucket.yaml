@@ -29,18 +29,8 @@ jobs:
       - name: Checkout only target dir (sparse)
         uses: actions/checkout@v4
         with:
+          lfs: true
           fetch-depth: 1
-          sparse-checkout: |
-            ${{ inputs.directory }}
-          sparse-checkout-cone: true
-          lfs: false
-
-      - name: Pull only LFS inside target dir
-        run: |
-          git lfs install
-          git config filter.lfs.smudge "git-lfs smudge --skip -- %f"
-          git config filter.lfs.process "git-lfs filter-process --skip"
-          git lfs pull --include="${{ inputs.directory }}/**" --exclude=""
 
       - name: Tune AWS CLI S3 transfer
         run: |
