@@ -23,7 +23,7 @@ on:
         required: true
 
 jobs:
-  sync-to-r2:
+  discover-subdirectories:
     runs-on: 4-core-arm64-GitHub-hosted-runners
     steps:
       - name: Checkout repository
@@ -50,6 +50,7 @@ jobs:
           fi
 
   sync-subdirectories:
+    needs: [discover-subdirectories]
     if: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs)[0] != null }}
     strategy:
       fail-fast: false
@@ -58,7 +59,7 @@ jobs:
         subdir: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs) }}
     uses: BMA-Game/github-reuse-workflow/.github/workflows/sync-r2-reusable.yaml@main
     with:
-      directory: ${{ matrix.folder }}
+      directory: ${{ matrix.subdir }}
       bucket-name: ${{ needs.get-env.outputs.bucket_name }}
       r2-account-id: ${{ needs.get-env.outputs.r2_account_id }}
     secrets:
