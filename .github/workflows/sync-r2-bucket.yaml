@@ -71,7 +71,7 @@ jobs:
     with:
       # Compose the full path to pass to the reusable workflow
       directory: ${{ format('{0}/{1}', inputs.directory, matrix.subdir) }}
-      bucket-name: ${{ inputs['bucket-name'] }}
+      bucket-name: ${{ format('{0}-{1}', inputs['bucket-name'], matrix.subdir) }}
       r2-account-id: ${{ inputs['r2-account-id'] }}
     secrets:
       R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
