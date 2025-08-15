@@ -52,7 +52,14 @@ jobs:
           git show --name-only --pretty=format: HEAD | tail -n +2 || echo "No files in last commit"
 
           # Get changed img files in latest commit, filtering for the specific directory
-          mapfile -t changed_img_files < <(git diff --name-only --diff-filter=ACM HEAD^ HEAD | grep "^${{ inputs.directory }}/.*\.(png|webp)$" | sed "s|^${{ inputs.directory }}/||" || true)
+          echo "Testing grep pattern:"
+          git diff --name-only --diff-filter=ACM HEAD^ HEAD | grep "^${{ inputs.directory }}/.*\.(png|webp)$" || echo "No matches found"
+
+          # Alternative approach: use awk for more reliable pattern matching
+          echo "Testing awk pattern:"
+          git diff --name-only --diff-filter=ACM HEAD^ HEAD | awk -v dir="${{ inputs.directory }}" '$0 ~ "^" dir "/" && $0 ~ /\.(png|webp)$/' || echo "No matches found with awk"
+
+          mapfile -t changed_img_files < <(git diff --name-only --diff-filter=ACM HEAD^ HEAD | awk -v dir="${{ inputs.directory }}" '$0 ~ "^" dir "/" && $0 ~ /\.(png|webp)$/' | sed "s|^${{ inputs.directory }}/||" || true)
 
           # Debug: Show what we found
           echo "Changed img files count: ${#changed_img_files[@]}"
