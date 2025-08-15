@@ -26,11 +26,12 @@ jobs:
   sync-to-r2:
     runs-on: 4-core-arm64-GitHub-hosted-runners
     steps:
-      - name: Checkout only target dir (sparse)
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
           lfs: true
+          fetch-depth: 1
+
       - name: Tune AWS CLI S3 transfer
         run: |
           aws configure set default.s3.max_concurrent_requests 64
