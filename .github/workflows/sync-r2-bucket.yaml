@@ -38,10 +38,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd "${{ inputs.directory }}"
 
-          # Get changed img files in latest commit
-          mapfile -t changed_img_files < <(git diff --name-only --diff-filter=ACM HEAD^ HEAD | grep '\.(png|webp)$' || true)
+          # Get changed img files in latest commit, filtering for the specific directory
+          mapfile -t changed_img_files < <(git diff --name-only --diff-filter=ACM HEAD^ HEAD | grep "^${{ inputs.directory }}/.*\.(png|webp)$" | sed "s|^${{ inputs.directory }}/||" || true)
 
           # Initialize set to store subdirs
           declare -A changed_dirs=()
@@ -63,6 +62,7 @@ jobs:
             mapfile -t subdirs < <(printf "%s\n" "${!changed_dirs[@]}" | sort)
             subdir_json=$(printf "%s\n" "${subdirs[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
           else
+            echo "no dir"
             subdir_json="[]"
           fi
 
