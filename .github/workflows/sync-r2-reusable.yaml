@@ -35,13 +35,6 @@ jobs:
         with:
           lfs: true
           fetch-depth: 1
-      - name: Tune AWS CLI S3 transfer
-        run: |
-          aws configure set default.s3.max_concurrent_requests 64
-          aws configure set default.s3.multipart_threshold 16MB
-          aws configure set default.s3.multipart_chunksize 64MB
-          aws configure set default.retry_mode standard
-          aws configure set default.max_attempts 5
 
       - name: Sync files to R2 Bucket (fast)
         env:
@@ -56,4 +49,4 @@ jobs:
           fi
           aws s3 sync "${{ inputs.directory }}/" "$dest" \
             --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
-            --delete --no-progress
+            --no-progress

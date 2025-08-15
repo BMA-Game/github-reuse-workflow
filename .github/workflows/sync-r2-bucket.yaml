@@ -23,30 +23,67 @@ on:
         required: true
 
 jobs:
-  sync-to-r2:
+  discover-subdirectories:
     runs-on: 4-core-arm64-GitHub-hosted-runners
+    outputs:
+      subdirs: ${{ steps.find.outputs.subdirs }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          lfs: true
-          fetch-depth: 1
+          fetch-depth: 2
 
-      - name: Tune AWS CLI S3 transfer
+      - name: Find subdirectories and detect only new img
+        id: find
+        shell: bash
         run: |
-          aws configure set default.s3.max_concurrent_requests 64
-          aws configure set default.s3.multipart_threshold 16MB
-          aws configure set default.s3.multipart_chunksize 64MB
-          aws configure set default.retry_mode standard
-          aws configure set default.max_attempts 5
+          set -euo pipefail
+          cd "${{ inputs.directory }}"
 
-      - name: Sync files to R2 Bucket (fast)
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: "auto"
-        run: |
-          aws s3 sync "${{ inputs.directory }}/" "s3://${{ inputs.bucket-name }}/" \
-            --endpoint-url "https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com" \
-            --no-progress \
-            --delete
+          # Get changed img files in latest commit
+          mapfile -t changed_img_files < <(git diff --name-only --diff-filter=ACM HEAD^ HEAD | grep '\.(png|webp)$' || true)
+
+          # Initialize set to store subdirs
+          declare -A changed_dirs=()
+
+          has_root_files=false
+
+          for file in "${changed_img_files[@]}"; do
+            # Normalize and check if it's at root level
+            if [[ "$file" == */* ]]; then
+              top_dir="${file%%/*}"
+              changed_dirs["$top_dir"]=1
+            else
+              has_root_files=true
+            fi
+          done
+
+          # Convert changed_dirs to sorted array
+          if [ "${#changed_dirs[@]}" -gt 0 ]; then
+            mapfile -t subdirs < <(printf "%s\n" "${!changed_dirs[@]}" | sort)
+            subdir_json=$(printf "%s\n" "${subdirs[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          else
+            subdir_json="[]"
+          fi
+
+          echo "has_root_files=${has_root_files}" >> "$GITHUB_OUTPUT"
+          echo "subdirs=${subdir_json}" >> "$GITHUB_OUTPUT"
+
+  sync-subdirectories:
+    needs: [discover-subdirectories]
+    if: ${{ needs.discover-subdirectories.outputs.subdirs != '' && needs.discover-subdirectories.outputs.subdirs != '[]' }}
+    strategy:
+      fail-fast: false
+      max-parallel: 60
+      matrix:
+        subdir: ${{ fromJson(needs.discover-subdirectories.outputs.subdirs || '[]') }}
+    uses: BMA-Game/github-reuse-workflow/.github/workflows/sync-r2-reusable.yaml@main
+    with:
+      # Compose the full path to pass to the reusable workflow
+      directory: ${{ format('{0}/{1}', inputs.directory, matrix.subdir) }}
+      bucket-name: ${{ inputs['bucket-name'] }}
+      r2-account-id: ${{ inputs['r2-account-id'] }}
+      dest-prefix: ${{ matrix.subdir }}
+    secrets:
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
