@@ -31,7 +31,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
 
       - name: Find subdirectories and detect only new img
         id: find
@@ -39,8 +39,24 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Debug: Show current directory and inputs
+          echo "Current directory: $(pwd)"
+          echo "Input directory: ${{ inputs.directory }}"
+
+          # Debug: Show all changed files first
+          echo "All changed files:"
+          git diff --name-only --diff-filter=ACM HEAD^ HEAD || echo "No changes found"
+
+          # Alternative: Try to get changes from the last commit
+          echo "Files in last commit:"
+          git show --name-only --pretty=format: HEAD | tail -n +2 || echo "No files in last commit"
+
           # Get changed img files in latest commit, filtering for the specific directory
           mapfile -t changed_img_files < <(git diff --name-only --diff-filter=ACM HEAD^ HEAD | grep "^${{ inputs.directory }}/.*\.(png|webp)$" | sed "s|^${{ inputs.directory }}/||" || true)
+
+          # Debug: Show what we found
+          echo "Changed img files count: ${#changed_img_files[@]}"
+          echo "Changed img files: ${changed_img_files[*]}"
 
           # Initialize set to store subdirs
           declare -A changed_dirs=()
@@ -48,19 +64,27 @@ jobs:
           has_root_files=false
 
           for file in "${changed_img_files[@]}"; do
+            echo "Processing file: '$file'"
             # Normalize and check if it's at root level
             if [[ "$file" == */* ]]; then
               top_dir="${file%%/*}"
+              echo "Found subdirectory: '$top_dir'"
               changed_dirs["$top_dir"]=1
             else
+              echo "Found root file: '$file'"
               has_root_files=true
             fi
           done
+
+          # Debug: Show what directories we found
+          echo "Directories found: ${!changed_dirs[@]}"
+          echo "Number of directories: ${#changed_dirs[@]}"
 
           # Convert changed_dirs to sorted array
           if [ "${#changed_dirs[@]}" -gt 0 ]; then
             mapfile -t subdirs < <(printf "%s\n" "${!changed_dirs[@]}" | sort)
             subdir_json=$(printf "%s\n" "${subdirs[@]}" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+            echo "Found subdirs: $subdir_json"
           else
             echo "no dir"
             subdir_json="[]"
