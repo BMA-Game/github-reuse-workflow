@@ -1,0 +1,161 @@
+---
+description: Best practices for creating and using reusable GitHub Actions workflows
+---
+
+# Reusable Workflows Best Practices
+
+Guidelines for designing, implementing, and consuming reusable GitHub Actions workflows.
+
+## Design Principles
+
+### Workflow Design
+- Create focused, single-purpose workflows
+- Design for reusability across multiple repositories
+- Provide sensible defaults while maintaining flexibility
+- Document all inputs and their purposes clearly
+
+### Input Strategy
+- Use descriptive input names that indicate purpose
+- Provide required/optional distinction
+- Set reasonable defaults for optional inputs
+- Validate input types (string, number, boolean)
+
+### Flexibility vs. Simplicity
+- Balance configurability with ease of use
+- Avoid over-parameterization that complicates usage
+- Group related parameters logically
+- Use consistent naming conventions across workflows
+
+## Implementation Standards
+
+### Workflow Trigger
+```yaml
+on:
+  workflow_call:
+    inputs:
+      # Define inputs here
+    secrets:
+      # Define secrets if needed
+    outputs:
+      # Define outputs if needed
+```
+
+### Input Validation
+- Use appropriate input types
+- Provide meaningful default values
+- Document complex input formats
+- Consider input constraints and validation
+
+### Error Handling
+- Provide clear error messages
+- Fail fast for invalid configurations
+- Include troubleshooting information in errors
+- Set appropriate timeouts
+
+## Documentation Requirements
+
+### Workflow Documentation
+- Document purpose and use cases
+- Provide example usage scenarios
+- List all inputs, outputs, and requirements
+- Include prerequisite setup instructions
+
+### README Template
+```markdown
+# Workflow Name
+
+## Purpose
+Brief description of what this workflow does.
+
+## Usage
+```yaml
+uses: org/repo/.github/workflows/workflow.yaml@v1
+with:
+  input-name: "value"
+```
+
+## Inputs
+| Input | Required | Default | Description |
+|-------|----------|---------|-------------|
+| input-name | Yes | - | Description |
+
+## Outputs
+| Output | Description |
+|--------|-------------|
+| output-name | Description |
+
+## Prerequisites
+- List any required setup
+- IAM roles, secrets, etc.
+```
+
+## Versioning Strategy
+
+### Semantic Versioning
+- Use semantic versioning for workflow releases
+- Tag major versions (v1, v2) for breaking changes
+- Tag minor versions (v1.1, v1.2) for new features
+- Tag patch versions (v1.1.1) for bug fixes
+
+### Backward Compatibility
+- Maintain backward compatibility within major versions
+- Deprecate features gradually with warnings
+- Provide migration guides for breaking changes
+
+## Testing and Validation
+
+### Testing Strategy
+- Test workflows in isolated environments
+- Validate with different input combinations
+- Test error scenarios and edge cases
+- Use matrix strategies for comprehensive testing
+
+### Quality Assurance
+- Review workflow changes for security implications
+- Validate permissions and access controls
+- Test performance and resource usage
+- Ensure proper cleanup of resources
+
+## Usage Guidelines
+
+### Consumer Best Practices
+- Pin to specific versions or tags, not branches
+- Use meaningful workflow names in consuming repos
+- Provide all required inputs explicitly
+- Handle workflow failures appropriately
+
+### Example Consumer Usage
+```yaml
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-image:
+    uses: bma/infrastructure/github-reuse-workflow/.github/workflows/build-image.yaml@v1
+    with:
+      docker-image: "123456789.dkr.ecr.ap-southeast-1.amazonaws.com/my-app"
+      docker-tag: ${{ github.sha }}
+      setup-platforms: "linux/amd64,linux/arm64"
+      build-platforms: "linux/arm64"
+      aws-region: "ap-southeast-1"
+      role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+      role-session-name: "github-actions-my-app-${{ github.run_id }}"
+      role-duration-seconds: 1800
+```
+
+## Security Considerations
+
+### Secret Management
+- Use GitHub secrets for sensitive data
+- Avoid hardcoding credentials in workflows
+- Use OIDC for cloud provider authentication
+- Limit secret scope to necessary workflows
+
+### Permission Model
+- Follow principle of least privilege
+- Use environment-specific permissions
+- Regularly audit and rotate credentials
+- Document required permissions clearly

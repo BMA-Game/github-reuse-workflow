@@ -1,0 +1,68 @@
+---
+globs: *.yaml,*.yml
+description: GitHub Actions workflow standards and best practices
+---
+
+# GitHub Actions Workflow Standards
+
+This rule applies to all YAML workflow files and establishes standards for GitHub Actions workflows.
+
+## Workflow Structure Standards
+
+### Naming Conventions
+- Use descriptive workflow names that clearly indicate purpose
+- Use kebab-case for job and step names
+- Use meaningful step names that describe the action being performed
+
+### Input Definitions
+- Always specify `required: true/false` for inputs
+- Provide sensible defaults where appropriate
+- Use clear, descriptive input names
+- Document input purposes in comments when complex
+
+### Runner Selection
+- Use specific runner types (e.g., `4-core-arm64-GitHub-hosted-runners`)
+- Consider cost and performance implications of runner choice
+- Prefer ARM64 runners for cost efficiency when compatible
+
+### Security Best Practices
+- Use pinned action versions (e.g., `@v4` not `@main`)
+- Minimize permissions with explicit scopes
+- Use AWS IAM roles with temporary credentials
+- Set reasonable session durations (default: 1200 seconds)
+
+### Performance Optimization
+- Enable GitHub Actions cache for Docker builds
+- Use `cache-from: type=gha` and `cache-to: type=gha,mode=max`
+- Configure multi-platform builds efficiently with QEMU
+
+### Error Handling
+- Provide meaningful error messages
+- Use appropriate timeouts for long-running operations
+- Consider cleanup steps for failed builds
+
+## Example Pattern
+
+```yaml
+name: Descriptive Action Name
+
+on:
+  workflow_call:
+    inputs:
+      required-input:
+        required: true
+        type: string
+      optional-input:
+        required: false
+        type: string
+        default: "sensible-default"
+
+jobs:
+  job-name:
+    runs-on: 4-core-arm64-GitHub-hosted-runners
+    steps:
+      - name: Clear action description
+        uses: pinned/action@v4
+        with:
+          parameter: ${{ inputs.required-input }}
+```

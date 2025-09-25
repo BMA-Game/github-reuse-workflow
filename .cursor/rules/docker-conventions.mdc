@@ -1,0 +1,84 @@
+---
+description: Docker and containerization conventions for build workflows
+globs: Dockerfile*,*.dockerfile,docker-compose*
+---
+
+# Docker and Containerization Conventions
+
+Guidelines for Docker image building and containerization within GitHub Actions workflows.
+
+## Multi-Platform Build Standards
+
+### Platform Configuration
+- Default build platform: `linux/arm64` for cost efficiency
+- Support common platforms: `linux/amd64,linux/arm64`
+- Use QEMU for cross-platform builds with `docker/setup-qemu-action@v3`
+- Configure Docker Buildx with `docker/setup-buildx-action@v3`
+
+### Image Tagging Strategy
+- Use semantic versioning or commit-based tags
+- Include environment indicators (dev, staging, prod)
+- Format: `{registry}/{repository}:{tag}`
+- Example: `123456789.dkr.ecr.region.amazonaws.com/my-app:v1.2.3`
+
+### Build Context Optimization
+- Use `.` as build context by default
+- Optimize Dockerfile layers for caching
+- Leverage multi-stage builds for smaller final images
+- Use `.dockerignore` to exclude unnecessary files
+
+## Caching Strategy
+
+### GitHub Actions Cache
+- Always use GitHub Actions cache for Docker builds
+- Configuration:
+  ```yaml
+  cache-from: type=gha
+  cache-to: type=gha,mode=max
+  ```
+- This provides significant build time improvements
+
+### Docker Layer Caching
+- Order Dockerfile instructions from least to most frequently changing
+- Copy dependency files before source code
+- Use specific COPY commands rather than broad wildcards
+
+## Performance Considerations
+
+### Build Efficiency
+- Prefer ARM64 runners for ARM64 builds (native performance)
+- Use BuildKit features for parallel builds
+- Consider build-time secrets management with `--secret`
+
+### Resource Management
+- Set appropriate build timeouts
+- Monitor build duration and optimize bottlenecks
+- Use build-time variables for configuration
+
+## Security Best Practices
+
+### Base Images
+- Use official, minimal base images
+- Pin base image versions with digests when possible
+- Regularly update base images for security patches
+
+### Build Secrets
+- Never include secrets in image layers
+- Use BuildKit secrets for build-time authentication
+- Ensure sensitive files are in `.dockerignore`
+
+## Example Multi-Platform Build
+
+```yaml
+- name: Build and push
+  uses: docker/build-push-action@v6
+  with:
+    context: .
+    platforms: linux/amd64,linux/arm64
+    push: true
+    tags: ${{ inputs.docker-image }}:${{ inputs.docker-tag }}
+    cache-from: type=gha
+    cache-to: type=gha,mode=max
+    build-args: |
+      BUILD_VERSION=${{ github.sha }}
+```

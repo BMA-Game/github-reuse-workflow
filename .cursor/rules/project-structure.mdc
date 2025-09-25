@@ -1,0 +1,34 @@
+---
+alwaysApply: true
+description: GitHub Reusable Workflow Project Structure
+---
+
+# GitHub Reusable Workflow Project Structure
+
+This project contains reusable GitHub Actions workflows for building and deploying Docker images to AWS ECR.
+
+## Project Layout
+
+- [.github/workflows/build-image.yaml](mdc:.github/workflows/build-image.yaml) - Main reusable workflow for building Docker images
+- `.vscode/` - VSCode configuration with project-specific color theme
+- `.cursor/rules/` - Cursor AI rules for consistent development practices
+
+## Key Components
+
+The main workflow [`build-image.yaml`](mdc:.github/workflows/build-image.yaml) provides:
+- Multi-platform Docker image building (ARM64/AMD64)
+- AWS ECR integration with role-based authentication
+- GitHub Actions cache optimization
+- Configurable build parameters
+
+## Workflow Inputs
+
+The reusable workflow accepts these key inputs:
+- `docker-image`: Target ECR repository name
+- `docker-tag`: Image tag to apply
+- `setup-platforms`: Platforms for QEMU setup
+- `build-platforms`: Target build platforms (defaults to linux/arm64)
+- `aws-region`: AWS region (defaults to ap-southeast-1)
+- `role-to-assume`: AWS IAM role ARN
+- `role-session-name`: AWS session identifier
+- `role-duration-seconds`: Session duration (defaults to 1200s)

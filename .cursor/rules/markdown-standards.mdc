@@ -1,0 +1,74 @@
+---
+globs: *.md,*.mdc
+description: Markdown formatting standards for documentation and rules
+---
+
+# Markdown Standards
+
+Guidelines for consistent markdown formatting in documentation and Cursor rules.
+
+## Formatting Requirements
+
+### Headings
+- Always include blank lines before and after headings
+- Use consistent heading hierarchy (# > ## > ### > ####)
+- Use descriptive, clear heading text
+
+### Lists
+- Surround lists with blank lines before and after
+- Use consistent list formatting (- or * for unordered, 1. for ordered)
+- Maintain proper indentation for nested lists
+
+### Code Blocks
+- Surround fenced code blocks with blank lines
+- Always specify language for syntax highlighting
+- Use backticks for inline code elements
+
+### Tables
+- Surround tables with blank lines before and after
+- Use consistent column alignment
+- Include header rows for all tables
+
+### File Endings
+- End all files with a single newline character
+- Avoid trailing whitespace on lines
+
+## Example Well-Formatted Markdown
+
+```markdown
+# Main Heading
+
+This is a paragraph with proper spacing.
+
+## Sub-heading
+
+Some content here.
+
+### List Example
+
+- Item 1
+- Item 2
+- Item 3
+
+### Code Example
+
+```yaml
+name: Example
+on: push
+```
+
+### Table Example
+
+| Column 1 | Column 2 |
+|----------|----------|
+| Value 1  | Value 2  |
+
+The end.
+```
+
+## Quality Standards
+
+- Use clear, concise language
+- Maintain consistent terminology
+- Include examples where helpful
+- Keep line lengths reasonable (under 120 characters when possible)
