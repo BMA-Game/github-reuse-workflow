@@ -11,7 +11,7 @@ on:
         required: true
         type: string
     secrets:
-      GH_ACTIONS_BACKOFFICE_TOKEN:
+      BACK_OFFICE_DEPLOY_CONFIG_TOKEN:
         required: true
 
 jobs:
@@ -22,6 +22,6 @@ jobs:
     steps:
       - id: set-metrix
         run: |
-          data="{\"include\": $(curl  -H "x-github-action-token: ${{secrets.GH_ACTIONS_BACKOFFICE_TOKEN}}" -G '${{ inputs.api-url }}')}"
+          data="{\"include\": $(curl  -H "x-github-action-token: ${{ secrets.BACK_OFFICE_DEPLOY_CONFIG_TOKEN }}" -G '${{ inputs.api-url }}')}"
           echo $data
           echo "matrix=$data" >> $GITHUB_OUTPUT
