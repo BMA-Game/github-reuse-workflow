@@ -81,7 +81,7 @@ jobs:
           command: pages deploy --project-name=${{ inputs.cloudflare-page-project-name }} --branch ${{ inputs.branch }} ./
 
       - name: Purge Cloudflare cache
-        uses: nathanvaughn/actions-cloudflare-purge@v4
+        uses: nathanvaughn/actions-cloudflare-purge@v4.0.0
         with:
           cf_zone: ${{ steps.get-cloudflare-secret.outputs.zone-id }}
           cf_auth: ${{ steps.get-cloudflare-secret.outputs.api-token }}
