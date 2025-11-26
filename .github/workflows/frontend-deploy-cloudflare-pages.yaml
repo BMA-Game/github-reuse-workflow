@@ -74,6 +74,23 @@ jobs:
           echo "zone-id=$CLOUDFLARE_ZONE_ID" >> $GITHUB_OUTPUT
           echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
 
+      - name: Debug SECRETS
+        run: |
+          echo ">>> SECRET RAW"
+          echo "$SECRETS"
+
+          echo ">>> Try pretty print"
+          echo "$SECRETS" | jq .
+
+          echo ">>> Try list all keys"
+          echo "$SECRETS" | jq -r 'keys[]'
+
+          echo ">>> ZONE_KEY from env"
+          echo "$ZONE_KEY"
+
+          echo ">>> Try extract using ZONE_KEY"
+          echo "$SECRETS" | jq -r ".\"$ZONE_KEY\""
+
       - name: Publish
         uses: cloudflare/wrangler-action@v3
         env:
