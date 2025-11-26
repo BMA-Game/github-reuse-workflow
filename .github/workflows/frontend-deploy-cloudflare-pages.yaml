@@ -70,6 +70,7 @@ jobs:
           echo "::add-mask::$CLOUDFLARE_API_TOKEN"
           echo "zone-id=$CLOUDFLARE_ZONE_ID" >> $GITHUB_OUTPUT
           echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
+          echo $CLOUDFLARE_ZONE_ID
 
       - name: Publish
         uses: cloudflare/wrangler-action@v3
