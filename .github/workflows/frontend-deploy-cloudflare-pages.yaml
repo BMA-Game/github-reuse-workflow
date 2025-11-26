@@ -74,8 +74,6 @@ jobs:
           echo "zone-id=$CLOUDFLARE_ZONE_ID" >> $GITHUB_OUTPUT
           echo "api-token=$CLOUDFLARE_API_TOKEN" >> $GITHUB_OUTPUT
 
-      - name: Debug SECRETS
-        run: |
           echo ">>> SECRET RAW"
           echo "$SECRETS"
 
