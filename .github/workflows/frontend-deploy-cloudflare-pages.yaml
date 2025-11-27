@@ -62,11 +62,9 @@ jobs:
 
       - name: Get Cloudflare api token
         id: get-cloudflare-secret
-        env:
-          ZONE_KEY: ${{ inputs.secret-zone-id-key }}
         run: |
           SECRETS=$(aws secretsmanager get-secret-value --secret-id arn:aws:secretsmanager:ap-southeast-1:${{ inputs.aws-account }}:secret:${{ inputs.cloudflare-credential }} --query SecretString --output text --region ${{ inputs.aws-region }})
-          CLOUDFLARE_ZONE_ID=$(echo $SECRETS | jq -r ".\"$ZONE_KEY\"" | tr -d '"')
+          CLOUDFLARE_ZONE_ID=$(echo $SECRETS | jq -r ".\"${{ inputs.secret-zone-id-key }}\"" | tr -d '"')
           CLOUDFLARE_API_TOKEN=$(echo $SECRETS | jq .api_token | tr -d '"')
           echo "CLOUDFLARE_ZONE_ID: $CLOUDFLARE_ZONE_ID"
           echo "::add-mask::$CLOUDFLARE_ZONE_ID"
