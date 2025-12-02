@@ -34,18 +34,10 @@ jobs:
           scope: '@bma-alphabet'
 
       - name: Install npm CLI (latest for OIDC support)
-        run: |
-          echo "Installing latest npm CLI for OIDC support..."
-          npm install -g npm@latest
-          echo "npm CLI version: $(npm --version)"
-          echo ""
-          echo "⚠️  For OIDC to work, ensure Trusted Publisher is configured:"
-          echo "   https://www.npmjs.com/settings/bma-alphabet/oauth"
-          echo "   Repository: ${{ github.repository }}"
-          echo "   Workflow: .github/workflows/publish.yaml"
+        run: npm install -g npm@latest
 
-          - name: Install dependencies
-          run: pnpm i --frozen-lockfile
+      - name: Install dependencies
+        run: pnpm i --frozen-lockfile
 
       - name: Build
         run: pnpm build
@@ -53,9 +45,6 @@ jobs:
       - name: Run Semantic Release CLI
         id: semantic
         run: |
-          echo "Running semantic-release (without npm publish)..."
-          echo "npm publish will be done separately using OIDC"
-
           # Get latest tag before semantic-release
           git fetch --tags --force
           OLD_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
@@ -85,15 +74,6 @@ jobs:
       - name: Publish to npm via OIDC
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          echo "Publishing to npm using OIDC authentication..."
-          echo "Version: ${{ steps.semantic.outputs.new_release_version }}"
-          echo ""
-          echo "⚠️  Make sure Trusted Publisher is configured:"
-          echo "   https://www.npmjs.com/settings/bma-alphabet/oauth"
-          echo "   Repository: ${{ github.repository }}"
-          echo "   Workflow: .github/workflows/publish.yaml"
-          echo ""
-
           # npm publish will use OIDC automatically if Trusted Publisher is set up
           npm publish --registry=https://registry.npmjs.org/ --access=public
 
