@@ -2,10 +2,9 @@ name: Publish
 
 on:
   workflow_call:
-    inputs:
-      tag:
+    secrets:
+      GH_PAT:
         required: true
-        type: string
 
 jobs:
   release:
