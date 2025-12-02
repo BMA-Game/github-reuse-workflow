@@ -1,0 +1,98 @@
+name: Publish
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: pnpm/action-setup@v3
+        name: Install pnpm
+        id: pnpm-install
+        with:
+          version: 10
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@bma-alphabet'
+
+      - name: Install npm CLI (latest for OIDC support)
+        run: |
+          echo "Installing latest npm CLI for OIDC support..."
+          npm install -g npm@latest
+          echo "npm CLI version: $(npm --version)"
+          echo ""
+          echo "⚠️  For OIDC to work, ensure Trusted Publisher is configured:"
+          echo "   https://www.npmjs.com/settings/bma-alphabet/oauth"
+          echo "   Repository: ${{ github.repository }}"
+          echo "   Workflow: .github/workflows/publish.yaml"
+
+          - name: Install dependencies
+          run: pnpm i --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run Semantic Release CLI
+        id: semantic
+        run: |
+          echo "Running semantic-release (without npm publish)..."
+          echo "npm publish will be done separately using OIDC"
+
+          # Get latest tag before semantic-release
+          git fetch --tags --force
+          OLD_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "Latest tag before semantic-release: ${OLD_TAG:-none}"
+
+          # Run semantic-release and capture output
+          OUTPUT=$(npx semantic-release 2>&1) || true
+          echo "$OUTPUT"
+
+          # Get latest tag after semantic-release
+          git fetch --tags --force
+          NEW_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          echo "Latest tag after semantic-release: ${NEW_TAG:-none}"
+
+          # Check if a new release was published (tag changed)
+          if [ -n "$NEW_TAG" ] && [ "$OLD_TAG" != "$NEW_TAG" ]; then
+            echo "new_release_published=true" >> $GITHUB_OUTPUT
+            echo "new_release_version=$NEW_TAG" >> $GITHUB_OUTPUT
+            echo "✅ New release published: ${OLD_TAG:-none} -> $NEW_TAG"
+          else
+            echo "new_release_published=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  No new release to publish (tag unchanged: ${OLD_TAG:-none})"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+      - name: Publish to npm via OIDC
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo "Publishing to npm using OIDC authentication..."
+          echo "Version: ${{ steps.semantic.outputs.new_release_version }}"
+          echo ""
+          echo "⚠️  Make sure Trusted Publisher is configured:"
+          echo "   https://www.npmjs.com/settings/bma-alphabet/oauth"
+          echo "   Repository: ${{ github.repository }}"
+          echo "   Workflow: .github/workflows/publish.yaml"
+          echo ""
+
+          # npm publish will use OIDC automatically if Trusted Publisher is set up
+          npm publish --registry=https://registry.npmjs.org/ --access=public
+
+          echo "✅ Published successfully via OIDC"
