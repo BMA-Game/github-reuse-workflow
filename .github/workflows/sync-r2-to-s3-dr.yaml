@@ -23,6 +23,10 @@ on:
         description: "The IAM Role ARN to assume for AWS authentication."
         required: true
         type: string
+      role-duration-seconds:
+        required: true
+        type: number
+        default: 1200
     secrets:
       R2_ACCESS_KEY_ID:
         description: "The access key ID for Cloudflare R2."
@@ -50,12 +54,12 @@ jobs:
           aws-region: ${{ inputs.aws-region }}
           role-to-assume: ${{ inputs.iam-role-arn }}
           role-session-name: github-actions-r2-dr-sync-${{ github.run_id }}
-          role-duration-seconds: 3600
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
       - name: Configure rclone
         run: |
           mkdir -p ~/.config/rclone
-          cat > ~/.config/rclone/rclone.conf << EOF
+          cat > ~/.config/rclone/rclone.conf << 'EOF'
           [r2]
           type = s3
           provider = Cloudflare
@@ -63,14 +67,19 @@ jobs:
           secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
           endpoint = https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com
           acl = private
+          no_check_bucket = true
 
           [s3]
           type = s3
           provider = AWS
           env_auth = true
           region = ${{ inputs.aws-region }}
+          location_constraint = ${{ inputs.aws-region }}
           acl = private
+          no_check_bucket = true
           EOF
+          # Remove leading spaces from heredoc
+          sed -i 's/^          //' ~/.config/rclone/rclone.conf
 
       - name: Sync R2 to S3 (direct transfer)
         run: |
@@ -85,7 +94,10 @@ jobs:
             --stats 30s \
             --stats-one-line \
             --transfers 16 \
-            --checkers 32
+            --checkers 32 \
+            --exclude ".DS_Store" \
+            --exclude "**/.DS_Store" \
+            --exclude "Thumbs.db"
 
           echo "Sync completed successfully!"
 
