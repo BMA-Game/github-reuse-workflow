@@ -1,0 +1,95 @@
+name: Sync R2 to S3 Disaster Recovery
+
+on:
+  workflow_call:
+    inputs:
+      r2-bucket-name:
+        description: "The name of the Cloudflare R2 bucket to sync from."
+        required: true
+        type: string
+      r2-account-id:
+        description: "The Cloudflare account ID associated with the R2 bucket."
+        required: true
+        type: string
+      s3-bucket-name:
+        description: "The name of the AWS S3 bucket to sync to."
+        required: true
+        type: string
+      aws-region:
+        description: "The AWS region where the S3 bucket is located."
+        required: true
+        type: string
+      iam-role-arn:
+        description: "The IAM Role ARN to assume for AWS authentication."
+        required: true
+        type: string
+    secrets:
+      R2_ACCESS_KEY_ID:
+        description: "The access key ID for Cloudflare R2."
+        required: true
+      R2_SECRET_ACCESS_KEY:
+        description: "The secret access key for Cloudflare R2."
+        required: true
+
+jobs:
+  sync-r2-to-s3:
+    runs-on: 4-core-arm64-GitHub-hosted-runners
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Install rclone
+        run: |
+          curl -O https://downloads.rclone.org/rclone-current-linux-arm64.deb
+          sudo dpkg -i rclone-current-linux-arm64.deb
+          rm rclone-current-linux-arm64.deb
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.iam-role-arn }}
+          role-session-name: github-actions-r2-dr-sync-${{ github.run_id }}
+          role-duration-seconds: 3600
+
+      - name: Configure rclone
+        run: |
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf << EOF
+          [r2]
+          type = s3
+          provider = Cloudflare
+          access_key_id = ${{ secrets.R2_ACCESS_KEY_ID }}
+          secret_access_key = ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          endpoint = https://${{ inputs.r2-account-id }}.r2.cloudflarestorage.com
+          acl = private
+
+          [s3]
+          type = s3
+          provider = AWS
+          env_auth = true
+          region = ${{ inputs.aws-region }}
+          acl = private
+          EOF
+
+      - name: Sync R2 to S3 (direct transfer)
+        run: |
+          echo "Starting direct sync from R2 to S3..."
+          echo "Source: r2:${{ inputs.r2-bucket-name }}"
+          echo "Destination: s3:${{ inputs.s3-bucket-name }}"
+
+          rclone sync \
+            r2:${{ inputs.r2-bucket-name }} \
+            s3:${{ inputs.s3-bucket-name }} \
+            --progress \
+            --stats 30s \
+            --stats-one-line \
+            --transfers 16 \
+            --checkers 32
+
+          echo "Sync completed successfully!"
+
+      - name: Show sync summary
+        run: |
+          echo "=== S3 Bucket Summary ==="
+          aws s3 ls s3://${{ inputs.s3-bucket-name }} --summarize --human-readable --recursive | tail -2
