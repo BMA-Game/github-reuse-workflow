@@ -59,7 +59,7 @@ jobs:
       - name: Configure rclone
         run: |
           mkdir -p ~/.config/rclone
-          cat > ~/.config/rclone/rclone.conf << 'EOF'
+          cat > ~/.config/rclone/rclone.conf <<EOF
           [r2]
           type = s3
           provider = Cloudflare
@@ -78,8 +78,17 @@ jobs:
           acl = private
           no_check_bucket = true
           EOF
-          # Remove leading spaces from heredoc
-          sed -i 's/^          //' ~/.config/rclone/rclone.conf
+          # Remove leading whitespace from each line
+          sed -i 's/^[[:space:]]*//' ~/.config/rclone/rclone.conf
+          echo "=== rclone config ==="
+          cat ~/.config/rclone/rclone.conf
+          echo "=== rclone remotes ==="
+          rclone listremotes
+
+      - name: Verify S3 bucket access
+        run: |
+          echo "Testing S3 bucket access..."
+          aws s3 ls s3://${{ inputs.s3-bucket-name }} --max-items 1 || echo "Warning: Could not list S3 bucket"
 
       - name: Sync R2 to S3 (direct transfer)
         run: |
