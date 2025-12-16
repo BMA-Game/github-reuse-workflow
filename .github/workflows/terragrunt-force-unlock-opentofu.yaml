@@ -1,0 +1,102 @@
+name: Terragrunt force unlock
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'Environment to unlock'
+        required: true
+        type: string
+      lock-id:
+        description: 'Lock ID to unlock'
+        required: true
+        type: string
+      path:
+        description: 'Path to unlock'
+        required: true
+        type: string
+      # tf-version:
+      #   required: false
+      #   type: string
+      #   default: '1.4.6'
+      tg-version:
+        required: false
+        type: string
+        default: '0.96.0'
+      tofu-version:
+        required: false
+        type: string
+        default: '1.11.1'
+      aws-region:
+        required: true
+        type: string
+        default: ap-southeast-1
+      role-to-assume:
+        required: true
+        type: string
+      role-session-name:
+        required: true
+        type: string
+      role-duration-seconds:
+        required: true
+        type: number
+        default: 1200
+    secrets:
+      GH_ACTIONS_PRIVATE_KEY:
+        required: true
+      GH_PAT:
+        required: true
+
+jobs:
+  force-unlock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      WORKING_DIR: ${{ github.workspace }}/terragrunt/${{ inputs.environment }}/${{ inputs.path }}
+    steps:
+      - name: Add SSH key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p /home/runner/.ssh
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GH_ACTIONS_PRIVATE_KEY }}"
+          ssh-keyscan github.com >> /home/runner/.ssh/known_hosts
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ inputs.aws-region }}
+          role-to-assume: ${{ inputs.role-to-assume }}
+          role-session-name: ${{ inputs.role-session-name }}
+          role-duration-seconds: ${{ inputs.role-duration-seconds }}
+
+      - name: Terragrunt Init
+        uses: gruntwork-io/terragrunt-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          INPUT_PRE_EXEC_1: |
+            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "https://github.com"
+          INPUT_PRE_EXEC_2: |
+            git config --global url."https://github-machine-token:${{secrets.GH_PAT}}@github.com".insteadOf "ssh://git@github.com"
+        with:
+          tofu_version: ${{ inputs.tofu-version }}
+          tg_version: ${{ inputs.tg-version }}
+          tg_dir: ${{ env.WORKING_DIR }}
+          tg_command: init -upgrade
+
+      - name: Terraform Unlock
+        uses: gruntwork-io/terragrunt-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+        with:
+          tofu_version: ${{ inputs.tofu-version }}
+          tg_version: ${{ inputs.tg-version }}
+          tg_dir: ${{ env.WORKING_DIR }}
+          tg_command: force-unlock -force ${{ github.event.inputs.lock-id }}
