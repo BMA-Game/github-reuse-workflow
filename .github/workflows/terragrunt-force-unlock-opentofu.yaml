@@ -15,10 +15,6 @@ on:
         description: 'Path to unlock'
         required: true
         type: string
-      # tf-version:
-      #   required: false
-      #   type: string
-      #   default: '1.4.6'
       tg-version:
         required: false
         type: string
