@@ -95,4 +95,4 @@ jobs:
           tofu_version: ${{ inputs.tofu-version }}
           tg_version: ${{ inputs.tg-version }}
           tg_dir: ${{ env.WORKING_DIR }}
-          tg_command: apply -auto-approve --terragrunt-debug
+          tg_command: apply -auto-approve --inputs-debug
