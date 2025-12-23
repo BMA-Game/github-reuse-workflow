@@ -78,6 +78,7 @@ jobs:
         with:
           apiToken: ${{ steps.get-cloudflare-secret.outputs.api-token }}
           accountId: ${{ inputs.cloudflare-account-id }}
+          wranglerVersion: '4.56.0'
           command: pages deploy --project-name=${{ inputs.cloudflare-page-project-name }} --branch ${{ inputs.branch }} ./
 
       - name: Purge Cloudflare cache
