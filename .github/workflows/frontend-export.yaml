@@ -13,6 +13,10 @@ on:
       env:
         required: false
         type: string
+      is-lfs:
+        required: false
+        type: boolean
+        default: false
     secrets:
       mySecrets:
         required: false
@@ -23,6 +27,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: ${{ inputs.is-lfs }}
+
+      - name: Check if LFS is enabled
+        run: |
+          if [ "$INPUT_IS_LFS" = "true" ]; then
+            echo "LFS is enabled"
+            git lfs pull
+          else
+            echo "LFS is disabled"
+          fi
 
       - uses: pnpm/action-setup@v4
         name: Install pnpm
@@ -35,7 +50,7 @@ jobs:
         name: Install Node.js
         with:
           node-version: 22
-          cache: "pnpm"
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm i --frozen-lockfile
