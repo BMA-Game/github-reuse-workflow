@@ -3,11 +3,6 @@ name: Sync S3 bucket
 on:
   workflow_call:
     inputs:
-      directory:
-        description: "Directory"
-        required: true
-        default: "dev"
-        type: string
       bucket-name:
         description: "Bucket Name"
         required: true
