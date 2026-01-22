@@ -41,6 +41,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.download-artifact-name }}
+          path: ${{ inputs.download-artifact-name }}
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
