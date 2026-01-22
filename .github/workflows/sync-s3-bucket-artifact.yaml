@@ -39,6 +39,7 @@ jobs:
     steps:
       - name: Download a single artifact
         uses: actions/download-artifact@v4
+        id: artifact
         with:
           name: ${{ inputs.download-artifact-name }}
 
@@ -55,4 +56,4 @@ jobs:
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
       - name: Sync assets to s3
-        run: aws s3 sync ./ s3://${{ inputs.bucket-name }} --delete
+        run: aws s3 sync ./${{ steps.artifact.outputs.name }} s3://${{ inputs.bucket-name }} --delete
