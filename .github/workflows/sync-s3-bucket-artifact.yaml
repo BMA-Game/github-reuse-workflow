@@ -52,4 +52,4 @@ jobs:
           role-duration-seconds: ${{ inputs.role-duration-seconds }}
 
       - name: Sync assets to s3
-        run: aws s3 sync ${{ inputs.download-artifact-name }}/ s3://${{ inputs.bucket-name }} --delete
+        run: aws s3 sync out/ s3://${{ inputs.bucket-name }} --delete
