@@ -37,8 +37,8 @@ on:
 jobs:
   deploy:
     permissions:
-      contents: "read"
-      id-token: "write"
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -57,8 +57,8 @@ jobs:
       - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: "pnpm"
+          node-version: 24
+          cache: 'pnpm'
           cache-dependency-path: functions/pnpm-lock.yaml
 
       - name: Install firebase-tools is-ci
@@ -91,10 +91,10 @@ jobs:
           create_credentials_file: true
           export_environment_variables: true
 
-      - name: "Set up Cloud SDK"
-        uses: "google-github-actions/setup-gcloud@v2"
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
         with:
-          version: ">= 363.0.0"
+          version: '>= 363.0.0'
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
