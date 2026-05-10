@@ -51,7 +51,7 @@ jobs:
         name: Install pnpm
         id: setup-pnpm
         with:
-          version: 10
+          version: 11
           run_install: false
 
       - name: Install Node.js

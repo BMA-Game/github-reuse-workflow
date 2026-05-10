@@ -19,11 +19,11 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GH_PAT }}
 
-      - uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v4
         name: Install pnpm
         id: pnpm-install
         with:
-          version: 10
+          version: 11
           run_install: false
 
       - uses: actions/setup-node@v4
