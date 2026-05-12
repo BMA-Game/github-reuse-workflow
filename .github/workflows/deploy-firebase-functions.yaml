@@ -62,7 +62,7 @@ jobs:
           cache-dependency-path: functions/pnpm-lock.yaml
 
       - name: Install firebase-tools is-ci
-        run: npm install -g firebase-tools is-ci
+        run: pnpm install -g firebase-tools is-ci
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
