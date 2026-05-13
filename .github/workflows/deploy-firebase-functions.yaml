@@ -61,9 +61,12 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: functions/pnpm-lock.yaml
 
-      # pnpm global bin is not on PATH in Actions; use npm for CLIs (firebase, is-ci).
+      # pnpm global executables are not on PATH by default; expose them to later steps.
       - name: Install firebase-tools and is-ci
-        run: npm install -g firebase-tools is-ci
+        shell: bash
+        run: |
+          pnpm install -g firebase-tools is-ci
+          echo "$(pnpm bin -g)" >> "$GITHUB_PATH"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
