@@ -61,12 +61,22 @@ jobs:
           cache: 'pnpm'
           cache-dependency-path: functions/pnpm-lock.yaml
 
-      # pnpm global executables are not on PATH by default; expose them to later steps.
+      # Global CLIs live under ~/.local/share/pnpm/bin by default on Linux. Do not use
+      # `pnpm bin -g` here: it exits non-zero when that directory is not already on PATH,
+      # which fails the step under bash -e (common in GitHub Actions).
       - name: Install firebase-tools and is-ci
         shell: bash
         run: |
           pnpm install -g firebase-tools is-ci
-          echo "$(pnpm bin -g)" >> "$GITHUB_PATH"
+          if [ -n "${PNPM_HOME:-}" ] && [ -e "${PNPM_HOME}/bin/firebase" ]; then
+            echo "${PNPM_HOME}/bin" >> "$GITHUB_PATH"
+          elif [ -e "${HOME}/.local/share/pnpm/bin/firebase" ]; then
+            echo "${HOME}/.local/share/pnpm/bin" >> "$GITHUB_PATH"
+          else
+            echo "::error::firebase CLI not found after pnpm install -g (checked PNPM_HOME/bin and ~/.local/share/pnpm/bin)" >&2
+            ls -la "${HOME}/.local/share/pnpm" 2>&1 || true
+            exit 1
+          fi
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
