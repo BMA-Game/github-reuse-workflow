@@ -120,7 +120,7 @@ jobs:
         run: firebase use ${{ inputs.env }}
 
       - id: Deploy
-        run: firebase deploy --only functions -P ${{ inputs.env }}
+        run: firebase deploy --only functions -P ${{ inputs.env }} --force
 
       - name: Verify Cloud Functions
         run: |
