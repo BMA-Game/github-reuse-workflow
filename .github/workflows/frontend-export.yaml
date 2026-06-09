@@ -69,3 +69,4 @@ jobs:
         with:
           name: ${{ inputs.upload-artifact-name }}
           path: out
+          retention-days: 1
