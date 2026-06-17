@@ -49,29 +49,10 @@ jobs:
             sed -i -E 's|tag(\s*)\=\s\"(.*)"|tag\1= "${{ inputs.tag }}"|g' ./$trim_path
           done
 
-      - name: Commit and push (with rebase retry)
-        env:
-          BRANCH: ${{ inputs.branch }}
-          COMMIT_MSG: "ci: 🎡 update image terragrunt ${{ inputs.env }} with ${{ inputs.tag }}"
-        run: |
-          set -euo pipefail
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          for attempt in 1 2 3; do
-            git pull --rebase origin "${BRANCH}"
-            git add -A
-            if git diff --staged --quiet; then
-              echo "No terragrunt changes to commit"
-              exit 0
-            fi
-            git commit -m "${COMMIT_MSG}"
-            if git push origin "HEAD:${BRANCH}"; then
-              echo "Push succeeded on attempt ${attempt}"
-              exit 0
-            fi
-            echo "Push rejected (attempt ${attempt}), resetting for retry..."
-            git reset --soft HEAD~1
-            sleep 5
-          done
-          echo "Failed to push after 3 attempts"
-          exit 1
+      - name: Commit files
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "ci: 🎡 update image terragrunt ${{ inputs.env }} with ${{ inputs.tag }}"
+          branch: ${{ inputs.branch }}
+          # Already on inputs.branch from Checkout + Sync; re-checkout would abort on sed edits.
+          skip_checkout: true
