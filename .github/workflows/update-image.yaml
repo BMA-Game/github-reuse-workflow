@@ -47,3 +47,5 @@ jobs:
         with:
           commit_message: "ci: 🎡 update image terragrunt ${{ inputs.env }} with ${{ inputs.tag }}"
           branch: ${{ inputs.branch }}
+          # Already on inputs.branch from Checkout; re-checkout would abort on sed edits.
+          skip_checkout: true
