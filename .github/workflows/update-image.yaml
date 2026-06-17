@@ -30,6 +30,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_PAT }}
+          ref: ${{ inputs.branch }}
 
       - name: Set Image in Terragrunt
         env:
